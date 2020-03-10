@@ -77,6 +77,10 @@ class Plotter3(object):
         self.plotable_dict = self.create_plottable_dict()
         self.c_logger.info("Plottable dict has been created successfully.")
 
+        self.fig, self.axis_array = plt.subplots(
+            1, 2, figsize=(11, 8), gridspec_kw={"width_ratios": [8, 1]}
+        )
+
     def __set_x_axis_config_data(self):
         self.c_logger.info("Starting to get the X axis data from config file.")
         self.c_logger.info("The used config file: {}".format(X_AXIS_CONFIG_FILE_PATH))
@@ -135,9 +139,8 @@ class Plotter3(object):
             plus_or_minus_time = "{:02d}:{:02d}".format(int(ellapsed_hours), int(ellapsed_mins))
 
             self.c_logger.debug(
-                "Elapsed hours: {} , Elapsed minutes: {} , " "Plus or minus time: {}".format(
-                    ellapsed_hours, ellapsed_mins, plus_or_minus_time
-                )
+                "Elapsed hours: {} , Elapsed minutes: {} , "
+                "Plus or minus time: {}".format(ellapsed_hours, ellapsed_mins, plus_or_minus_time)
             )
 
             # IF YOU HAVE MINUS TIME
@@ -233,10 +236,37 @@ class Plotter3(object):
         )
         self.c_logger.info("Annotates have been created successfully.")
 
+    def plotting_plus_minus_graph(self):
+        """
+        TODO: Fill the docstring.
+        :return:
+        """
+
+        # TODO: Add the logging messages to this method.
+        self.c_logger.info("Starting to plot the plus/minus hours in the data range.")
+
+        # TODO: Fill the method with data and plot the bar graph.
+        plus_minus__time_axis = self.axis_array[1]
+        self.c_logger.info("Set X label to 'Times'")
+        plus_minus__time_axis.set_xlabel("Overtime")
+        self.c_logger.info("Set Y label to 'Dates'")
+        plus_minus__time_axis.set_ylabel("Time")
+
+        self.c_logger.info("Set Y ticks")
+        plus_minus__time_axis.set_yticks([1, 2, 3, 4, 5])
+        self.c_logger.info("Set Y tick labels")
+        plus_minus__time_axis.set_yticklabels(["01:00", "02:00", "03:00", "04:00", "05:00"])
+
+        self.c_logger.info("Set X ticks")
+        plus_minus__time_axis.set_xticks([])
+        self.c_logger.info("Set X tick labels")
+        plus_minus__time_axis.set_xticklabels([])
+
     def plotting(self):
+        # TODO: Refactor the names and structure (Due to new subplot has been added.).
         self.c_logger.info("Starting to plot the data")
-        fig, ax = plt.subplots(figsize=(10, 8))
-        self.c_logger.info("Fig: {} , AX: {}".format(fig, ax))
+        working_time_axis = self.axis_array[0]
+        self.c_logger.info("Fig: {} , AX: {}".format(self.fig, working_time_axis))
         y_place = 2
         self.c_logger.info("Y place: {}".format(y_place))
         self.c_logger.info("Start to render the plottable data to figure.")
@@ -249,7 +279,7 @@ class Plotter3(object):
                 # IF WE HAVE OFF DAY
                 if single_dict["minus"] == 480:
                     self.c_logger.debug("This is an off day.")
-                    ax.broken_barh(
+                    working_time_axis.broken_barh(
                         [
                             (single_dict["from"], single_dict["to"] - single_dict["from"]),
                             (single_dict["to"], single_dict["to"],),
@@ -261,7 +291,7 @@ class Plotter3(object):
                     y_place += 3
                 else:
                     self.c_logger.debug("There is not an off day.")
-                    ax.broken_barh(
+                    working_time_axis.broken_barh(
                         [
                             (single_dict["from"], single_dict["to"] - single_dict["from"]),
                             (single_dict["to"], single_dict["minus"] - single_dict["to"],),
@@ -270,12 +300,12 @@ class Plotter3(object):
                         facecolors=("aqua", "red"),
                         hatch="",
                     )
-                    self.create_annotate(ax, y_place, single_dict)
+                    self.create_annotate(working_time_axis, y_place, single_dict)
                     y_place += 3
             # IF WE HAVE PLUS HOURS
             else:
                 self.c_logger.debug("There are plus hours")
-                ax.broken_barh(
+                working_time_axis.broken_barh(
                     [
                         (single_dict["from"], single_dict["to"] - single_dict["from"]),
                         (single_dict["to"], single_dict["plus"],),
@@ -284,35 +314,37 @@ class Plotter3(object):
                     facecolors=("aqua", "lightgreen"),
                     hatch="",
                 )
-                self.create_annotate(ax, y_place, single_dict)
+                self.create_annotate(working_time_axis, y_place, single_dict)
                 y_place += 3
 
         self.c_logger.info("Set Y limit: 0, {}".format(self.y_axis_limit))
-        ax.set_ylim(0, self.y_axis_limit)
+        working_time_axis.set_ylim(0, self.y_axis_limit)
         self.c_logger.info("Set X limit: {}, {}".format(min(self.x_axis_ticks), self.y_axis_limit))
-        ax.set_xlim(min(self.x_axis_ticks), self.x_axis_limit)
+        working_time_axis.set_xlim(min(self.x_axis_ticks), self.x_axis_limit)
 
         self.c_logger.info("Set X label to 'Times'")
-        ax.set_xlabel("Times")
+        working_time_axis.set_xlabel("Times")
         self.c_logger.info("Set Y label to 'Dates'")
-        ax.set_ylabel("Dates")
+        working_time_axis.set_ylabel("Dates")
 
         self.c_logger.info("Set Y ticks")
-        ax.set_yticks(self.y_axis_ticks)
+        working_time_axis.set_yticks(self.y_axis_ticks)
         self.c_logger.info("Set Y tick labels")
-        ax.set_yticklabels(self.dates)
+        working_time_axis.set_yticklabels(self.dates)
 
         self.c_logger.info("Set X ticks")
-        ax.set_xticks(self.x_axis_ticks)
+        working_time_axis.set_xticks(self.x_axis_ticks)
         self.c_logger.info("Set X tick labels")
-        ax.set_xticklabels(self.x_axis_tick_labels)
+        working_time_axis.set_xticklabels(self.x_axis_tick_labels)
 
         self.c_logger.info("Set grid of figure")
-        ax.grid(True, linestyle=":")
+        working_time_axis.grid(True, linestyle=":")
 
         self.c_logger.info("Return the generated figure.")
-        return fig
+        self.plotting_plus_minus_graph()
+
         # plt.show()
+        return self.fig
 
 
 if __name__ == "__main__":

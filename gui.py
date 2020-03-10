@@ -158,7 +158,7 @@ class MainWindow(object):
         self.c_logger = c_logger
         self.main_window = main_window
         self.c_logger.info("Get main window: {}".format(main_window))
-        self.main_window.title("Time report")
+        self.main_window.title("Time reporting")
         self.c_logger.info("Set window title to 'Time report'")
         self.main_window.protocol("WM_DELETE_WINDOW", self.__disable_event)
 
