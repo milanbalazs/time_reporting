@@ -1,23 +1,21 @@
-__author__ = "Mani"
+"""
+This is the main script and it contains the all main window attributes.
+Python3.6.x > Python version is required.
+"""
+
+__author__ = "milanbalazs"
 import matplotlib
-
-matplotlib.use("TkAgg")  # noqa: E402
-import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-from tkinter import ttk
-from datetime import date, timedelta
-from logging import INFO as LOG_INFO
 import os
 import sys
 import datetime
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkinter import ttk
+from datetime import date, timedelta
+from logging import INFO as LOG_INFO
 
-# https://pypi.org/project/tkcalendar/
-# pip install tkcalendar
+
+# Documentation: https://pypi.org/project/tkcalendar/
+# Install it: pip install tkcalendar
 from tkcalendar import DateEntry
 
 try:
@@ -27,21 +25,38 @@ except ImportError:
     import Tkinter as tk
     from Tkinter import messagebox
 
-# Own modules imports
-
+# Get the path of the directory of the current file.
 PATH_OF_FILE_DIR = os.path.join(os.path.realpath(os.path.dirname(__file__)))  # noqa: E402
-
+# Append the current directory to PATH
 sys.path.append(PATH_OF_FILE_DIR)  # noqa: E402
 
+# Own modules imports
 from data_processor import DataProcessor
 from color_logger import ColoredLogger
 from plotter3 import Plotter3
 
+# Set-up the main logger instance.
 MAIN_LOGGER = ColoredLogger(os.path.basename(__file__), LOG_INFO)
+matplotlib.use("TkAgg")
 
 
 class TimePicker(ttk.Frame):
+    """
+    Time picker Class.
+    It is inherited from ttk.Frame class.
+    It contains all Time picker related attributes.
+    https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/ttk-Frame.html
+    Examples:
+        https://www.programcreek.com/python/example/82813/ttk.Frame
+    """
     def __init__(self, parent, default_hours, default_mins):
+        """
+        Init method of the 'TimePicker' class.
+        :param parent: Instance of the parent TK.
+        :param default_hours: Default hours to time picker object.
+        :param default_mins: Default minutes to time picker object.
+        """
+
         super().__init__(parent)
         self.hourstr = tk.StringVar(self, str(default_hours))
         self.hour = tk.Spinbox(self, from_=0, to=23, wrap=True, textvariable=self.hourstr, width=2)
@@ -53,41 +68,88 @@ class TimePicker(ttk.Frame):
         self.min.grid(row=0, column=1)
 
     def trace_var(self, *args):
+        """
+        Count the hours in case of 59 minutes.
+        :param args: Pass all arguments.
+        :return: None
+        """
+
         if self.last_value == "59" and self.minstr.get() == "0":
             self.hourstr.set(int(self.hourstr.get()) + 1 if self.hourstr.get() != "23" else 0)
         self.last_value = self.minstr.get()
 
     @staticmethod
     def show_error(title="Error", message="Error message"):
+        """
+        Show an error message box.
+        :param title: Title of the error message box.
+        :param message: Message (content) of the error message box.
+        :return: None
+        """
+
         messagebox.showerror(title, message)
 
     def get_time(self):
+        """
+        This method provides the current time (Value of Time picker).
+        :return: The current time as a string. Time Format: {:02d}:{:02d}
+        """
+
+        # If the hour counter is greater than 23 or it is less than 0.
         if 23 < int(self.hourstr.get()) or int(self.hourstr.get()) < 0:
+            # Show an error message box and return nothing.
             self.show_error(
                 title="Hour error",
                 message="'{}' is not a valid hour.".format(int(self.hourstr.get())),
             )
+        # If the minute counter is greater than 59 or it is less than 0.
         if 59 < int(self.minstr.get()) or int(self.minstr.get()) < 0:
+            # Show an error message box and return nothing.
             self.show_error(
                 title="Hour error",
                 message="'{}' is not a valid minute.".format(int(self.minstr.get())),
             )
+        # The ranges of hour and minute counters are valid so return the values.
         return "{:02d}:{:02d}".format(int(self.hourstr.get()), int(self.minstr.get()))
 
 
 class MyDateEntry(DateEntry):
+    """
+    Date Entry class.
+    This class contains all Date Entry related attributes.
+    It is inherited from 'DateEntry' class (Comes from 'tkcalendar' module).
+    # Documentation: https://pypi.org/project/tkcalendar/
+    # Install it: pip install tkcalendar
+    """
+
     def __init__(self, master=None, **kw):
+        """
+        Init method of the 'MyDateEntry' class.
+        :param master: Instance of the main Tk window.
+        :param kw: Pass all key-word arguments.
+        """
+
         DateEntry.__init__(self, master=master, **kw)
-        # add black border around drop-down calendar
+        # Add black border around drop-down calendar
         self._top_cal.configure(bg="black", bd=1)
-        # add label displaying today's date below
+        # Add label displaying today's date below
         tk.Label(
             self._top_cal, bg="gray90", anchor="w", text="Today: %s" % date.today().strftime("%x")
         ).pack(fill="x")
 
 
 class MainWindow(object):
+    """
+    This class contains the all Main Window related attributes.
+    """
+
     def __init__(self, main_window, c_logger=MAIN_LOGGER):
+        """
+        Init method of the 'MainWindow' class.
+        :param main_window: Instance of the main Tk window.
+        :param c_logger: Logger instance (ColoredLogger type is recommended).
+                         Default is MAIN_LOGGER (Global variable.)
+        """
 
         self.c_logger = c_logger
         self.main_window = main_window
@@ -108,6 +170,12 @@ class MainWindow(object):
         self.__start_visualisation()
 
     def __disable_event(self):
+        """
+        Disable the use the 'X' icon to exit.
+        Forcing to use the Exit button instead of 'X' icon.
+        :return: None
+        """
+
         self.c_logger.warning("Showing error message box.")
         messagebox.showerror(
             title="Exit error", message="Please use the 'Exit' button instead of [X]!",
@@ -115,6 +183,12 @@ class MainWindow(object):
         self.c_logger.info("Error message box has been closed.")
 
     def __set_resizable(self):
+        """
+        The the rows and columns to be configurable (resizable).
+        10 rows and 10 columns are set to resizable.
+        :return: None
+        """
+
         self.c_logger.info("Starting to set the resizable rows and columns")
         for x in range(0, 11):
             self.c_logger.debug("Set the {}. row and column resizable.".format(x))
@@ -123,6 +197,11 @@ class MainWindow(object):
         self.c_logger.info("Successfully set the resizable rows and columns.")
 
     def __create_visualisation_gui_section(self):
+        """
+        Create the visualisation related GUI section and render it to the main window.
+        :return: None
+        """
+
         self.c_logger.info("Starting to create visualisation GUI section.")
 
         visualisation_label = ttk.Label(
@@ -163,6 +242,11 @@ class MainWindow(object):
         self.c_logger.info("Visualisation GUI section has been created successfully.")
 
     def __start_visualisation(self):
+        """
+        Get all needed data for visualisation and plot it.
+        The plotted Matplotlib figure is integrated into the Main Window.
+        :return: None
+        """
 
         self.c_logger.info("Starting visualisation.")
 
@@ -210,10 +294,20 @@ class MainWindow(object):
         self.c_logger.info("The figure has been successfully plotted to TK canvas.")
 
     def __quit(self):
+        """
+        Quit from application.
+        :return: None
+        """
+
         self.c_logger.info("Quit from application.")
         self.main_window.quit()
 
     def __create_new_record_gui_section(self):
+        """
+        Create the visualisation related GUI section and render it to the main window.
+        :return: None
+        """
+
         self.c_logger.info("Starting to create the new record setting GUI section.")
         create_label = ttk.Label(
             self.main_window, text="Create/Update data", font=("Helvetica", 16)
@@ -248,6 +342,12 @@ class MainWindow(object):
         self.c_logger.info("New record setting GUI section has been successfully created.")
 
     def __set_time_into_config_json(self):
+        """
+        This method is a callback of the button which triggers to set a new time record.
+        The new time record is save to the config file (Json).
+        :return: None
+        """
+
         self.c_logger.info("Starting to set the times into Json file.")
         current_selected_date = self.__get_date_from_calendar(self.new_data_calendar_instance)
         arriving_time = self.__get_time_from_time_picker(self.arrive_time_picker_instance)
@@ -265,6 +365,13 @@ class MainWindow(object):
         self.c_logger.info("Successfully set the times into Json file.")
 
     def __set_time_picker(self, default_hours, default_mins):
+        """
+        Initialize a new Time Picker object.
+        :param default_hours: Default hours of the new Time Picker object.
+        :param default_mins: Default minutes of the new Time Picker object.
+        :return: The created Time Picker object. Type: TimePicker
+        """
+
         self.c_logger.info("Setting the time picker.")
         self.c_logger.info(
             "Default hours: {} , Default minutes: {}".format(default_hours, default_mins)
@@ -275,6 +382,14 @@ class MainWindow(object):
         return return_instance
 
     def __set_calendar(self, set_date=None):
+        """
+        Initialize and configure a new Date Entry object.
+        :param set_date: If this parameter is provided then this value will be the default date of
+                         the created Date Entry object. If it is not provided then the today date
+                         will be set.
+        :return: The created Date Entry object. Type: MyDateEntry
+        """
+
         self.c_logger.info("Starting to set the calendar.")
         if not set_date:
             set_date = datetime.datetime.now()
@@ -307,6 +422,14 @@ class MainWindow(object):
         return return_instance
 
     def __get_date_from_calendar(self, calendar_instance):
+        """
+        Get the current value of the provided Data Entry.
+        The required type: MyDateEntry
+        :param calendar_instance: Instance of the Data Entry.
+                                  Required type: MyDateEntry
+        :return: The current value of the provided Data Entry
+        """
+
         self.c_logger.info("Staring to get date from calendar.")
         self.c_logger.debug("The getting calendar instance: {}".format(calendar_instance))
         date_from_calendar = calendar_instance.get()
@@ -315,6 +438,14 @@ class MainWindow(object):
         return date_from_calendar
 
     def __get_time_from_time_picker(self, time_picker_instance):
+        """
+        Get the current value of the provided Time Picker.
+        The required type: TimePicker
+        :param time_picker_instance: Instance of the Time Picker.
+                                     Required type: TimePicker
+        :return: The current value of the provided Time Picker
+        """
+
         self.c_logger.info("Staring to get time from time picker.")
         self.c_logger.debug("The getting time picker instance: {}".format(time_picker_instance))
         time_from_time_picker = time_picker_instance.get_time()
@@ -323,6 +454,11 @@ class MainWindow(object):
         return time_from_time_picker
 
     def plot(self):
+        """
+        This method integrates the created MatPlotLib Figure into the Main window.
+        :return: None
+        """
+
         self.c_logger.info("Starting to plot the figure onto TK canvas.")
         canvas = FigureCanvasTkAgg(self.plotterobj, master=self.main_window)
         self.c_logger.info("The figure has been plotted onto TK canvas successfully.")
