@@ -38,6 +38,8 @@ from plotter3 import Plotter3
 path_of_log_file = os.path.join(PATH_OF_FILE_DIR, "logs", "main_log.log")
 MAIN_LOGGER = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
 
+# Set path of the window icon
+PATH_OF_WINDOW_ICON = os.path.join(PATH_OF_FILE_DIR, "imgs", "window_icon.png")
 matplotlib.use("TkAgg")
 
 
@@ -50,6 +52,7 @@ class TimePicker(ttk.Frame):
     Examples:
         https://www.programcreek.com/python/example/82813/ttk.Frame
     """
+
     def __init__(self, parent, default_hours, default_mins):
         """
         Init method of the 'TimePicker' class.
@@ -470,6 +473,7 @@ class MainWindow(object):
 
 
 window = tk.Tk()
+window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
 # change ttk theme to 'clam' to fix issue with downarrow button
 style = ttk.Style(window)
 style.theme_use("alt")
