@@ -229,7 +229,7 @@ class Plotter3(object):
                 data["to_hours_human_readable"], xy=(data["to"] + data["plus"] - 60, y_position),
             )
         instance.annotate(
-            data["working_hours_human_readable"], xy=(data["from"] - 55, y_position),
+            data["working_hours_human_readable"], xy=(data["from"] - 60, y_position),
         )
         instance.annotate(
             data["from_hours_human_readable"], xy=(data["from"], y_position),
