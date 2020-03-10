@@ -11,7 +11,6 @@ import datetime
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
 from datetime import date, timedelta
-from logging import INFO as LOG_INFO
 
 
 # Documentation: https://pypi.org/project/tkcalendar/
@@ -36,7 +35,9 @@ from color_logger import ColoredLogger
 from plotter3 import Plotter3
 
 # Set-up the main logger instance.
-MAIN_LOGGER = ColoredLogger(os.path.basename(__file__), LOG_INFO)
+path_of_log_file = os.path.join(PATH_OF_FILE_DIR, "logs", "main_log.log")
+MAIN_LOGGER = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
+
 matplotlib.use("TkAgg")
 
 
