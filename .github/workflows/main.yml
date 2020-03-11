@@ -40,4 +40,4 @@ jobs:
     - name: Black Code Formatter
       uses: lgeiger/black-action@master
       with:
-          args: ". --check -l 100 -v"
+          args: ". --check -l 100 -v --diff"
