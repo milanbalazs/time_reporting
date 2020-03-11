@@ -471,12 +471,13 @@ class MainWindow(object):
         canvas.draw()
         self.c_logger.info("The complete figure has been integrated into GUI successfully.")
 
+
 ####
 # ENTRY POINT
 ####
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     window = tk.Tk()
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
     # change ttk theme to 'clam' to fix issue with downarrow button
