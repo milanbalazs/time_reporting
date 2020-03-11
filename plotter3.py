@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import json
+import datetime
 from datetime import datetime
 
 # Own modules imports
@@ -24,7 +25,8 @@ from helper_functions import X_AXIS_CONFIG_FILE_PATH
 from color_logger import ColoredLogger
 
 # Set-up a default logger if it is not provided by another module.
-DEFAULT_LOGGER = ColoredLogger(os.path.basename(__file__))
+PATH_OF_LOG_FILE = os.path.join(PATH_OF_FILE_DIR, "logs", "plotter.log")
+DEFAULT_LOGGER = ColoredLogger(os.path.basename(__file__), log_file_path=PATH_OF_LOG_FILE)
 
 # Format of the time. Hours:Minutes
 FMT = "%H:%M"
@@ -218,8 +220,8 @@ class Plotter3(object):
                     ellapsed_hours * 60
                 )
 
-                plus_or_minus_time = "{:02d}:{:02d}".format(
-                    -int(ellapsed_hours), int(ellapsed_mins)
+                plus_or_minus_time = "-{:02d}:{:02d}".format(
+                    int(ellapsed_hours), int(ellapsed_mins)
                 )
 
                 self.c_logger.debug(
@@ -237,7 +239,7 @@ class Plotter3(object):
 
             if "-" in plus_or_minus_time:
                 self.c_logger.debug("'-' character is in Plus/Minus time.")
-                minus_time = self.x_axis_config_data[plus_or_minus_time.replace("-", "0")]
+                minus_time = self.x_axis_config_data[plus_or_minus_time.replace("-", "")]
                 self.c_logger.debug("Minus time without offset: {}".format(minus_time))
                 minus_time += time_offset
                 self.c_logger.debug("Minus time with offset: {}".format(minus_time))
@@ -247,7 +249,7 @@ class Plotter3(object):
                         "to": self.x_axis_config_data[single_dict["to"]],
                         "minus": minus_time,
                         "plus": None,
-                        "plus_minus_human_readable": plus_or_minus_time.replace("-", "-0"),
+                        "plus_minus_human_readable": plus_or_minus_time,
                         "working_hours_human_readable": time_in_office,
                         "from_hours_human_readable": single_dict["from"],
                         "to_hours_human_readable": single_dict["to"],
@@ -321,25 +323,107 @@ class Plotter3(object):
         :return: None
         """
 
-        # TODO: Add the logging messages to this method.
-        self.c_logger.info("Starting to plot the plus/minus hours in the data range.")
+        # TODO: Split this method more smaller and more understandable/readable mothods.
+        # TODO: Add the logging messages to this method and remove print functions.
+        self.c_logger.info("Starting to plot the overtime hours in the data range.")
 
-        # TODO: Fill the method with data and plot the bar graph.
+        over_time_seconds = 0
+        for single_dict in self.plotable_dict:
+            if single_dict["minus"]:
+                if single_dict["minus"] == 480:
+                    print("Off day")
+                    continue
+                print(
+                    "Minus",
+                    single_dict["plus_minus_human_readable"],
+                    single_dict["from_hours_human_readable"],
+                    single_dict["to_hours_human_readable"],
+                    single_dict["working_hours_human_readable"],
+                )
+                over_time = datetime.strptime("00:00", FMT) - datetime.strptime(
+                    single_dict["plus_minus_human_readable"].replace("-", ""), FMT
+                )
+                over_time_seconds += over_time.total_seconds()
+                print("OT: ", over_time_seconds, over_time.total_seconds())
+                continue
+            print(
+                "Plus",
+                single_dict["plus_minus_human_readable"],
+                single_dict["from_hours_human_readable"],
+                single_dict["to_hours_human_readable"],
+                single_dict["working_hours_human_readable"],
+            )
+            over_time = datetime.strptime("00:00", FMT) - datetime.strptime(
+                single_dict["plus_minus_human_readable"].replace("+", ""), FMT
+            )
+            over_time_seconds -= over_time.total_seconds()
+            print("OT: ", over_time_seconds, over_time.total_seconds())
+
+        print("bbbbb", over_time_seconds)
+
+        overtime_hours = int(divmod(abs(over_time_seconds), 3600)[0])
+        overtime_mins = int(divmod(abs(over_time_seconds), 60)[0]) - (overtime_hours * 60)
+        over_time_str = "{:02d}:{:02d}".format(-int(overtime_hours), int(overtime_mins))
+        if over_time_seconds < 0:
+            over_time_str = "-{:02d}:{:02d}".format(-int(overtime_hours), int(overtime_mins))
+
+        print("OVERTIME: {}".format(over_time_str))
+
+        y_ticks_plus = [abs(over_time_seconds) + x for x in range(1800, 7001, 1800)]
+        y_ticks_minus = [
+            abs(over_time_seconds) - x
+            for x in range(1800, 7001, 1800)
+            if abs(over_time_seconds) - x > 0
+        ]
+        y_ticks = [abs(over_time_seconds)]
+        y_ticks.extend(y_ticks_plus)
+        y_ticks.extend(y_ticks_minus)
+
+        print("Y ticks", y_ticks)
+
+        y_tick_labels = []
+
+        for y_tick in y_ticks:
+            y_tick_hours = int(divmod(abs(y_tick), 3600)[0])
+            y_tick_mins = int(divmod(abs(y_tick), 60)[0]) - (y_tick_hours * 60)
+            print("aaaaa", over_time_seconds)
+            if over_time_seconds < 0:
+                y_tick_labels.append("-{:02d}:{:02d}".format(int(y_tick_hours), int(y_tick_mins)))
+            else:
+                y_tick_labels.append("{:02d}:{:02d}".format(int(y_tick_hours), int(y_tick_mins)))
+
+        print("Y tick labels", y_tick_labels)
+
         plus_minus__time_axis = self.axis_array[1]
+
+        plus_minus__time_axis.set_ylim(min(y_ticks), max(y_ticks))
+        plus_minus__time_axis.set_xlim(0, 0)
         self.c_logger.info("Set X label to 'Times'")
         plus_minus__time_axis.set_xlabel("Overtime")
         self.c_logger.info("Set Y label to 'Dates'")
         plus_minus__time_axis.set_ylabel("Time")
 
         self.c_logger.info("Set Y ticks")
-        plus_minus__time_axis.set_yticks([1, 2, 3, 4, 5])
+        plus_minus__time_axis.set_yticks(y_ticks)
+        self.c_logger.info("Y ticks: {}".format(y_ticks))
+
         self.c_logger.info("Set Y tick labels")
-        plus_minus__time_axis.set_yticklabels(["01:00", "02:00", "03:00", "04:00", "05:00"])
+        plus_minus__time_axis.set_yticklabels(y_tick_labels)
+        self.c_logger.info("Y tick labels: {}".format(y_tick_labels))
 
         self.c_logger.info("Set X ticks")
         plus_minus__time_axis.set_xticks([])
         self.c_logger.info("Set X tick labels")
         plus_minus__time_axis.set_xticklabels([])
+
+        if over_time_seconds < 0:
+            plus_minus__time_axis.bar(
+                [0], abs(over_time_seconds), align="center", alpha=0.5, color="red"
+            )
+        else:
+            plus_minus__time_axis.bar(
+                [0], abs(over_time_seconds), align="center", alpha=0.5, color="green"
+            )
 
     def plotting(self):
         """
@@ -442,6 +526,7 @@ class Plotter3(object):
         self.c_logger.info("Set grid of figure")
         working_time_axis.grid(True, linestyle=":")
 
+
 ####
 # TEST SECTION
 ####
@@ -450,36 +535,10 @@ class Plotter3(object):
 if __name__ == "__main__":
     plotter_instance = Plotter3(
         [
-            {"date": "2020.03.01.", "from": "08:00", "to": "15:00"},
-            {"date": "2020.03.02.", "from": "09:00", "to": "14:30"},
-            {"date": "2020.03.03.", "from": "09:00", "to": "15:20"},
-            {"date": "2020.03.04.", "from": "06:00", "to": "17:45"},
-            {"date": "2020.03.05.", "from": "06:00", "to": "14:00"},
-            {"date": "2020.03.06.", "from": "08:00", "to": "15:00"},
-            {"date": "2020.03.07.", "from": "09:00", "to": "14:30"},
-            {"date": "2020.03.08.", "from": "09:00", "to": "15:20"},
-            {"date": "2020.03.09.", "from": "06:00", "to": "17:45"},
-            {"date": "2020.03.10.", "from": "06:00", "to": "14:00"},
-            {"date": "2020.03.11.", "from": "08:00", "to": "15:00"},
-            {"date": "2020.03.12.", "from": "09:00", "to": "14:30"},
-            {"date": "2020.03.13.", "from": "09:00", "to": "15:20"},
-            {"date": "2020.03.14.", "from": "06:00", "to": "17:45"},
-            {"date": "2020.03.15.", "from": "06:00", "to": "14:00"},
-            {"date": "2020.03.16.", "from": "08:00", "to": "15:00"},
-            {"date": "2020.03.17.", "from": "09:00", "to": "14:30"},
-            {"date": "2020.03.18.", "from": "09:00", "to": "15:20"},
-            {"date": "2020.03.19.", "from": "06:00", "to": "17:45"},
-            {"date": "2020.03.20.", "from": "06:00", "to": "14:00"},
-            {"date": "2020.03.21.", "from": "08:00", "to": "15:00"},
-            {"date": "2020.03.22.", "from": "09:00", "to": "14:30"},
-            {"date": "2020.03.23.", "from": "09:00", "to": "15:20"},
-            {"date": "2020.03.24.", "from": "06:00", "to": "17:45"},
-            {"date": "2020.03.25.", "from": "06:00", "to": "14:00"},
-            {"date": "2020.03.26.", "from": "08:00", "to": "15:00"},
-            {"date": "2020.03.27.", "from": "09:00", "to": "14:30"},
-            {"date": "2020.03.28.", "from": "09:00", "to": "15:20"},
-            {"date": "2020.03.29.", "from": "06:00", "to": "17:45"},
-            {"date": "2020.03.30.", "from": "06:00", "to": "14:00"},
+            {"date": "2020.03.01.", "from": "08:00", "to": "16:00"},
+            {"date": "2020.03.02.", "from": "09:00", "to": "17:00"},
+            {"date": "2020.03.03.", "from": "06:00", "to": "17:00"},
+            {"date": "2020.03.04.", "from": "10:00", "to": "14:30"},
         ]
     )
     plotter_instance.plotting()
