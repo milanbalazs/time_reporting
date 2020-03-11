@@ -30,6 +30,7 @@ from os import sep as os_sep
 from os.path import isdir, dirname
 from os.path import join as path_join
 import platform
+import errno
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
 
@@ -121,9 +122,7 @@ class ColoredLogger(Logger):
 
     COLOR_FORMAT = formatter_message(CONSOLE_FORMAT, True)
 
-    def __init__(
-        self, name, log_file_path=None, console_level=INFO, file_level=DEBUG
-    ):
+    def __init__(self, name, log_file_path=None, console_level=INFO, file_level=DEBUG):
         """
         Init method of 'ColoredLogger' class.
         :param name: Name of logger.
@@ -142,7 +141,9 @@ class ColoredLogger(Logger):
             if not isdir(log_folder_path):
                 try:
                     mkdir(log_folder_path)
-                except Exception:
+                except OSError as exc:
+                    if exc.errno != errno.EEXIST:
+                        raise exc
                     pass
             # create file handler which logs even debug messages
             log_file_formatter = ColoredFormatter(self.LOG_FILE_FORMAT, use_color=False)
@@ -157,6 +158,7 @@ class ColoredLogger(Logger):
         self.addHandler(console)
 
         return
+
 
 ####
 # TEST SECTION
