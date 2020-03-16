@@ -19,6 +19,7 @@ from datetime import datetime
 PATH_OF_FILE_DIR = os.path.join(os.path.realpath(os.path.dirname(__file__)))  # noqa: E402
 
 sys.path.append(PATH_OF_FILE_DIR)  # noqa: E402
+sys.path.append(os.path.join(PATH_OF_FILE_DIR, "tools"))  # noqa: E402
 
 from helper_functions import x_axis_data_generator
 from helper_functions import X_AXIS_CONFIG_FILE_PATH
@@ -323,7 +324,7 @@ class Plotter3(object):
         :return: None
         """
 
-        # TODO: Split this method more smaller and more understandable/readable mothods.
+        # TODO: Split this method more smaller and more understandable/readable methods.
         # TODO: Add the logging messages to this method and remove print functions.
         self.c_logger.info("Starting to plot the overtime hours in the data range.")
 

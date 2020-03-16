@@ -1,6 +1,6 @@
 """
 This is the main script and it contains the all main window attributes.
-Python3.6.x > Python version is required.
+Python3.6.x < Python version is required.
 """
 
 __author__ = "milanbalazs"
@@ -12,11 +12,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
 from datetime import date, timedelta
 
-
-# Documentation: https://pypi.org/project/tkcalendar/
-# Install it: pip install tkcalendar
-from tkcalendar import DateEntry
-
 try:
     import tkinter as tk
     from tkinter import messagebox
@@ -26,124 +21,28 @@ except ImportError:
 
 # Get the path of the directory of the current file.
 PATH_OF_FILE_DIR = os.path.join(os.path.realpath(os.path.dirname(__file__)))  # noqa: E402
-# Append the current directory to PATH
+# Append the required directories to PATH
 sys.path.append(PATH_OF_FILE_DIR)  # noqa: E402
+sys.path.append(os.path.join(PATH_OF_FILE_DIR, ".."))  # noqa: E402
 
 # Own modules imports
 from data_processor import DataProcessor
 from color_logger import ColoredLogger
 from plotter3 import Plotter3
+from time_picker import TimePicker
+from date_entry import MyDateEntry
 
 # Set-up the main logger instance.
-PATH_OF_LOG_FILE = os.path.join(PATH_OF_FILE_DIR, "logs", "main_log.log")
+PATH_OF_LOG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "logs", "main_log.log")
 MAIN_LOGGER = ColoredLogger(os.path.basename(__file__), log_file_path=PATH_OF_LOG_FILE)
 
 # Set path of the window icon
-PATH_OF_WINDOW_ICON = os.path.join(PATH_OF_FILE_DIR, "imgs", "window_icon.png")
+PATH_OF_WINDOW_ICON = os.path.join(PATH_OF_FILE_DIR, "..", "imgs", "window_icon.png")
 matplotlib.use("TkAgg")
 
 # Set test data set
-TEST_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "conf", "time_data_test.json")
-
-
-class TimePicker(ttk.Frame):
-    """
-    Time picker Class.
-    It is inherited from ttk.Frame class.
-    It contains all Time picker related attributes.
-    https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/ttk-Frame.html
-    Examples:
-        https://www.programcreek.com/python/example/82813/ttk.Frame
-    """
-
-    def __init__(self, parent, default_hours, default_mins):
-        """
-        Init method of the 'TimePicker' class.
-        :param parent: Instance of the parent TK.
-        :param default_hours: Default hours to time picker object.
-        :param default_mins: Default minutes to time picker object.
-        """
-
-        super().__init__(parent)
-        self.hourstr = tk.StringVar(self, str(default_hours))
-        self.hour = tk.Spinbox(self, from_=0, to=23, wrap=True, textvariable=self.hourstr, width=2)
-        self.minstr = tk.StringVar(self, str(default_mins))
-        self.minstr.trace("w", self.trace_var)
-        self.last_value = ""
-        self.min = tk.Spinbox(self, from_=0, to=59, wrap=True, textvariable=self.minstr, width=2)
-        self.hour.grid()
-        self.min.grid(row=0, column=1)
-
-    def trace_var(self):
-        """
-        Count the hours in case of 59 minutes.
-        :return: None
-        """
-
-        if self.last_value == "59" and self.minstr.get() == "0":
-            self.hourstr.set(int(self.hourstr.get()) + 1 if self.hourstr.get() != "23" else 0)
-        self.last_value = self.minstr.get()
-
-    @staticmethod
-    def show_error(title="Error", message="Error message"):
-        """
-        Show an error message box.
-        :param title: Title of the error message box.
-        :param message: Message (content) of the error message box.
-        :return: None
-        """
-
-        messagebox.showerror(title, message)
-
-    def get_time(self):
-        """
-        This method provides the current time (Value of Time picker).
-        :return: The current time as a string. Time Format: {:02d}:{:02d}
-        """
-
-        # If the hour counter is greater than 23 or it is less than 0.
-        if 23 < int(self.hourstr.get()) or int(self.hourstr.get()) < 0:
-            # Show an error message box and return nothing.
-            self.show_error(
-                title="Hour error",
-                message="'{}' is not a valid hour.".format(int(self.hourstr.get())),
-            )
-            return None
-        # If the minute counter is greater than 59 or it is less than 0.
-        if 59 < int(self.minstr.get()) or int(self.minstr.get()) < 0:
-            # Show an error message box and return nothing.
-            self.show_error(
-                title="Hour error",
-                message="'{}' is not a valid minute.".format(int(self.minstr.get())),
-            )
-            return None
-        # The ranges of hour and minute counters are valid so return the values.
-        return "{:02d}:{:02d}".format(int(self.hourstr.get()), int(self.minstr.get()))
-
-
-class MyDateEntry(DateEntry):
-    """
-    Date Entry class.
-    This class contains all Date Entry related attributes.
-    It is inherited from 'DateEntry' class (Comes from 'tkcalendar' module).
-    # Documentation: https://pypi.org/project/tkcalendar/
-    # Install it: pip install tkcalendar
-    """
-
-    def __init__(self, master=None, **kw):
-        """
-        Init method of the 'MyDateEntry' class.
-        :param master: Instance of the main Tk window.
-        :param kw: Pass all key-word arguments.
-        """
-
-        DateEntry.__init__(self, master=master, **kw)
-        # Add black border around drop-down calendar
-        self._top_cal.configure(bg="black", bd=1)
-        # Add label displaying today's date below
-        tk.Label(
-            self._top_cal, bg="gray90", anchor="w", text="Today: %s" % date.today().strftime("%x")
-        ).pack(fill="x")
+TEST_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "time_data_test.json")
+TEST_RUNNING = False
 
 
 class MainWindow(object):
@@ -164,7 +63,7 @@ class MainWindow(object):
         self.c_logger.info("Get main window: {}".format(main_window))
 
         self.c_logger.info("Creating DataProcessor instance.")
-        if test_run:
+        if TEST_RUNNING:
             self.data_processor = DataProcessor(c_logger=MAIN_LOGGER, config=TEST_CONFIG_FILE)
         else:
             self.data_processor = DataProcessor(c_logger=MAIN_LOGGER)
@@ -535,6 +434,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    test_run = args.test_flag
+    if args.test_flag:
+        TEST_RUNNING = True
 
     main()
