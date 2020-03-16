@@ -29,13 +29,24 @@ class DataProcessor(object):
     def _check_config_exist(self):
         self.c_logger.info("Start to check if getting config file exists.")
         if not os.path.isfile(self.config):
-            error_msg = "The getting '{}' config file doesn't exist.".format(self.config)
-            self.c_logger.error(error_msg)
-            raise Exception(error_msg)
+            warning_msg = "The getting '{}' config file doesn't exist.".format(self.config)
+            self.c_logger.warning(warning_msg)
+            try:
+                open(self.config, "a").close()
+            except Exception as unexpected_error:
+                self.c_logger.error(
+                    "Cannot create empty config file on '{}' path. ERROR: {}".format(
+                        self.config, unexpected_error
+                    )
+                )
+                raise unexpected_error
         self.c_logger.info("The getting '{}' config exists.".format(self.config))
 
     def get_data(self):
         self.c_logger.info("Start to get data from config Json file.")
+        if os.stat(self.config).st_size == 0:
+            self.c_logger.warning("The data Json file is empty.")
+            return [{}]
         with open(self.config, "r") as opened_file:
             json_data = json.load(opened_file)
         self.c_logger.debug(json_data)
@@ -147,6 +158,42 @@ class DataProcessor(object):
             "There is not time date for the '{}' date. Return '00:00', '00:00''".format(date)
         )
         return "00:00", "00:00"
+
+    def validate_time_range(self, arriving, leaving):
+        """
+        Validate the getting time range.
+        Eg.:
+            If the leaving time is earlier than arriving then it is a wrong time range.
+        :param arriving: Arriving time as a sting in HH:MM format
+        :param leaving: Leaving time as a sting in HH:MM format
+        :return: True if the time range is valid else False.
+        """
+
+        self.c_logger.info("Starting to validate the getting time range.")
+        self.c_logger.debug("Arriving time: {} , Leaving time: {}".format(arriving, leaving))
+
+        arriving_time = datetime.strptime(arriving, FMT)
+        arriving_time_in_sec = arriving_time.hour * 3600 + arriving_time.minute * 60
+        self.c_logger.debug(
+            "Arriving hours: {} , Arriving minutes: {}".format(
+                arriving_time.hour, arriving_time.minute
+            )
+        )
+        self.c_logger.debug("Arriving time in seconds: {}".format(arriving_time_in_sec))
+
+        leaving_time = datetime.strptime(leaving, FMT)
+        leaving_time_in_sec = leaving_time.hour * 3600 + leaving_time.minute * 60
+        self.c_logger.debug(
+            "Leaving hours: {} , Leaving minutes: {}".format(leaving_time.hour, leaving_time.minute)
+        )
+        self.c_logger.debug("Leaving time in seconds: {}".format(leaving_time_in_sec))
+
+        if leaving_time_in_sec < arriving_time_in_sec:
+            self.c_logger.info("The time range is NOT correct.")
+            return False
+
+        self.c_logger.info("The time range is correct.")
+        return True
 
 
 #  TEST SECTION

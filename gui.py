@@ -42,6 +42,9 @@ MAIN_LOGGER = ColoredLogger(os.path.basename(__file__), log_file_path=PATH_OF_LO
 PATH_OF_WINDOW_ICON = os.path.join(PATH_OF_FILE_DIR, "imgs", "window_icon.png")
 matplotlib.use("TkAgg")
 
+# Set test data set
+TEST_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "conf", "time_data_test.json")
+
 
 class TimePicker(ttk.Frame):
     """
@@ -71,10 +74,9 @@ class TimePicker(ttk.Frame):
         self.hour.grid()
         self.min.grid(row=0, column=1)
 
-    def trace_var(self, *args):
+    def trace_var(self):
         """
         Count the hours in case of 59 minutes.
-        :param args: Pass all arguments.
         :return: None
         """
 
@@ -106,6 +108,7 @@ class TimePicker(ttk.Frame):
                 title="Hour error",
                 message="'{}' is not a valid hour.".format(int(self.hourstr.get())),
             )
+            return None
         # If the minute counter is greater than 59 or it is less than 0.
         if 59 < int(self.minstr.get()) or int(self.minstr.get()) < 0:
             # Show an error message box and return nothing.
@@ -113,6 +116,7 @@ class TimePicker(ttk.Frame):
                 title="Hour error",
                 message="'{}' is not a valid minute.".format(int(self.minstr.get())),
             )
+            return None
         # The ranges of hour and minute counters are valid so return the values.
         return "{:02d}:{:02d}".format(int(self.hourstr.get()), int(self.minstr.get()))
 
@@ -158,12 +162,12 @@ class MainWindow(object):
         self.c_logger = c_logger
         self.main_window = main_window
         self.c_logger.info("Get main window: {}".format(main_window))
-        self.main_window.title("Time reporting")
-        self.c_logger.info("Set window title to 'Time report'")
-        self.main_window.protocol("WM_DELETE_WINDOW", self.__disable_event)
 
         self.c_logger.info("Creating DataProcessor instance.")
-        self.data_processor = DataProcessor(c_logger=MAIN_LOGGER)
+        if test_run:
+            self.data_processor = DataProcessor(c_logger=MAIN_LOGGER, config=TEST_CONFIG_FILE)
+        else:
+            self.data_processor = DataProcessor(c_logger=MAIN_LOGGER)
         self.c_logger.info("DataProcessor instance successfully created.")
 
         self.__set_resizable()
@@ -172,19 +176,6 @@ class MainWindow(object):
         self.__create_visualisation_gui_section()
 
         self.__start_visualisation()
-
-    def __disable_event(self):
-        """
-        Disable the use the 'X' icon to exit.
-        Forcing to use the Exit button instead of 'X' icon.
-        :return: None
-        """
-
-        self.c_logger.warning("Showing error message box.")
-        messagebox.showerror(
-            title="Exit error", message="Please use the 'Exit' button instead of [X]!",
-        )
-        self.c_logger.info("Error message box has been closed.")
 
     def __set_resizable(self):
         """
@@ -239,7 +230,7 @@ class MainWindow(object):
         set_button.grid(row=8, column=0, columnspan=2)
 
         set_button = ttk.Button(
-            self.main_window, text="Exit", style="C.TButton", command=lambda: self.__quit(),
+            self.main_window, text="Exit", style="C.TButton", command=lambda: self.quit_from_app(),
         )
         set_button.grid(row=9, column=0, columnspan=2)
 
@@ -297,7 +288,7 @@ class MainWindow(object):
         self.plot()
         self.c_logger.info("The figure has been successfully plotted to TK canvas.")
 
-    def __quit(self):
+    def quit_from_app(self):
         """
         Quit from application.
         :return: None
@@ -361,10 +352,26 @@ class MainWindow(object):
                 current_selected_date, arriving_time, leaving_time
             )
         )
+        if not arriving_time or not leaving_time:
+            self.c_logger.error(
+                "The set arriving/leaving time was not valid. "
+                "The record won't be set to data-set."
+            )
+            return
+        if not self.data_processor.validate_time_range(arriving_time, leaving_time):
+            error_msg = (
+                "The getting time range is not correct. "
+                "The arriving time is earlier than leaving."
+            )
+            self.c_logger.error(error_msg)
+            messagebox.showerror("Wring time range", error_msg)
+            return
         self.c_logger.info("Starting to set the new record into Json file.")
         self.data_processor.set_time(
             current_selected_date.replace(" ", ""), arriving_time, leaving_time
         )
+
+        self.__start_visualisation()
 
         self.c_logger.info("Successfully set the times into Json file.")
 
@@ -453,6 +460,8 @@ class MainWindow(object):
         self.c_logger.info("Staring to get time from time picker.")
         self.c_logger.debug("The getting time picker instance: {}".format(time_picker_instance))
         time_from_time_picker = time_picker_instance.get_time()
+        if not time_from_time_picker:
+            self.c_logger.error("The set time was not valid!")
         self.c_logger.info("Successfully get the time from time picker.")
         self.c_logger.debug("The getting time from time picker: {}".format(time_from_time_picker))
         return time_from_time_picker
@@ -472,14 +481,22 @@ class MainWindow(object):
         self.c_logger.info("The complete figure has been integrated into GUI successfully.")
 
 
-####
-# ENTRY POINT
-####
+class UserConfigTab(object):
+    """
+    TODO: Fill this class with content.
+    This tab contains all User configuration options.
+    Planned options:
+        - Name
+        - Birth date
+        - Employee number
+        - Photo
+    """
 
 
-if __name__ == "__main__":
+def main():
     window = tk.Tk()
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
+    window.title("Time reporting")
     # change ttk theme to 'clam' to fix issue with downarrow button
     style = ttk.Style(window)
     style.theme_use("alt")
@@ -487,6 +504,37 @@ if __name__ == "__main__":
     style.configure(
         "C.TButton", font=("calibri", 12, "bold"), background="red",
     )
-
-    start = MainWindow(window)
+    note = ttk.Notebook(window)
+    main_tab = tk.Frame(note)
+    user_config_tab = tk.Frame(note)
+    note.add(main_tab, text="Main")
+    note.add(user_config_tab, text="User")
+    note.pack()
+    start = MainWindow(main_tab)
+    window.protocol("WM_DELETE_WINDOW", start.quit_from_app)
     window.mainloop()
+
+
+####
+# ENTRY POINT
+####
+
+
+if __name__ == "__main__":
+
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument(
+        "--test",
+        dest="test_flag",
+        help="If this flag is set, the tool uses test values.",
+        action="store_true",
+    )
+
+    args = parser.parse_args()
+
+    test_run = args.test_flag
+
+    main()
