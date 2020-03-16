@@ -3,6 +3,7 @@ This module contains the all Time picker related attributes.
 """
 
 from tkinter import ttk
+
 try:
     import tkinter as tk
     from tkinter import messagebox
