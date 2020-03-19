@@ -25,10 +25,6 @@ from helper_functions import x_axis_data_generator
 from helper_functions import X_AXIS_CONFIG_FILE_PATH
 from color_logger import ColoredLogger
 
-# Set-up a default logger if it is not provided by another module.
-PATH_OF_LOG_FILE = os.path.join(PATH_OF_FILE_DIR, "logs", "plotter.log")
-DEFAULT_LOGGER = ColoredLogger(os.path.basename(__file__), log_file_path=PATH_OF_LOG_FILE)
-
 # Format of the time. Hours:Minutes
 FMT = "%H:%M"
 
@@ -38,7 +34,7 @@ class Plotter3(object):
     This class contains the all plotting related attributes.
     """
 
-    def __init__(self, plot_data, c_logger=DEFAULT_LOGGER):
+    def __init__(self, plot_data, c_logger=None):
         """
         Init method of the 'Plotter3' class.
         :param plot_data: Data for the plotting.
@@ -59,7 +55,7 @@ class Plotter3(object):
                          Default is DEFAULT_LOGGER (Global variable.)
         """
 
-        self.c_logger = c_logger
+        self.c_logger = c_logger if c_logger else self.__set_up_default_logger()
 
         self.c_logger.debug("Getting plot data: {}".format(plot_data))
 
@@ -121,6 +117,20 @@ class Plotter3(object):
         self.fig, self.axis_array = plt.subplots(
             1, 2, figsize=(11, 8), gridspec_kw={"width_ratios": [8, 1]}
         )
+
+    @staticmethod
+    def __set_up_default_logger():
+        """
+        Set-up a default logger if it is not provided as parameter.
+        :return: Instance of ColoredLogger
+        """
+
+        # Set-up a default logger if it is not provided by another module.
+        path_of_log_file = os.path.join(PATH_OF_FILE_DIR, "logs", "plotter.log")
+        return_logger = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
+        return_logger.info("Default logger has been set-up in main_tab module.")
+
+        return return_logger
 
     def __get_x_axis_config_data(self):
         """
@@ -325,42 +335,43 @@ class Plotter3(object):
         """
 
         # TODO: Split this method more smaller and more understandable/readable methods.
-        # TODO: Add the logging messages to this method and remove print functions.
+
         self.c_logger.info("Starting to plot the overtime hours in the data range.")
 
         over_time_seconds = 0
         for single_dict in self.plotable_dict:
             if single_dict["minus"]:
                 if single_dict["minus"] == 480:
-                    print("Off day")
+                    self.c_logger.debug("Off day")
                     continue
-                print(
-                    "Minus",
-                    single_dict["plus_minus_human_readable"],
-                    single_dict["from_hours_human_readable"],
-                    single_dict["to_hours_human_readable"],
-                    single_dict["working_hours_human_readable"],
+                self.c_logger.debug(
+                    "Minus time!\nFrom: {} , To: {} , Minus: {} , Working hours: {}".format(
+                        single_dict["from_hours_human_readable"],
+                        single_dict["to_hours_human_readable"],
+                        single_dict["plus_minus_human_readable"],
+                        single_dict["working_hours_human_readable"],
+                    )
                 )
+
                 over_time = datetime.strptime("00:00", FMT) - datetime.strptime(
                     single_dict["plus_minus_human_readable"].replace("-", ""), FMT
                 )
                 over_time_seconds += over_time.total_seconds()
-                print("OT: ", over_time_seconds, over_time.total_seconds())
+                self.c_logger.debug("Overtime is secs: {}".format(over_time_seconds))
                 continue
-            print(
-                "Plus",
-                single_dict["plus_minus_human_readable"],
-                single_dict["from_hours_human_readable"],
-                single_dict["to_hours_human_readable"],
-                single_dict["working_hours_human_readable"],
+            self.c_logger.debug(
+                "Plus time!\nFrom: {} , To: {} , Minus: {} , Working hours: {}".format(
+                    single_dict["from_hours_human_readable"],
+                    single_dict["to_hours_human_readable"],
+                    single_dict["plus_minus_human_readable"],
+                    single_dict["working_hours_human_readable"],
+                )
             )
             over_time = datetime.strptime("00:00", FMT) - datetime.strptime(
                 single_dict["plus_minus_human_readable"].replace("+", ""), FMT
             )
             over_time_seconds -= over_time.total_seconds()
-            print("OT: ", over_time_seconds, over_time.total_seconds())
-
-        print("bbbbb", over_time_seconds)
+            self.c_logger.debug("Overtime is secs: {}".format(over_time_seconds))
 
         overtime_hours = int(divmod(abs(over_time_seconds), 3600)[0])
         overtime_mins = int(divmod(abs(over_time_seconds), 60)[0]) - (overtime_hours * 60)
@@ -368,7 +379,7 @@ class Plotter3(object):
         if over_time_seconds < 0:
             over_time_str = "-{:02d}:{:02d}".format(-int(overtime_hours), int(overtime_mins))
 
-        print("OVERTIME: {}".format(over_time_str))
+        self.c_logger.debug("OVERTIME: {}".format(over_time_str))
 
         y_ticks_plus = [abs(over_time_seconds) + x for x in range(1800, 7001, 1800)]
         y_ticks_minus = [
@@ -380,20 +391,19 @@ class Plotter3(object):
         y_ticks.extend(y_ticks_plus)
         y_ticks.extend(y_ticks_minus)
 
-        print("Y ticks", y_ticks)
+        self.c_logger.debug("Y ticks: {}".format(y_ticks))
 
         y_tick_labels = []
 
         for y_tick in y_ticks:
             y_tick_hours = int(divmod(abs(y_tick), 3600)[0])
             y_tick_mins = int(divmod(abs(y_tick), 60)[0]) - (y_tick_hours * 60)
-            print("aaaaa", over_time_seconds)
             if over_time_seconds < 0:
                 y_tick_labels.append("-{:02d}:{:02d}".format(int(y_tick_hours), int(y_tick_mins)))
             else:
                 y_tick_labels.append("{:02d}:{:02d}".format(int(y_tick_hours), int(y_tick_mins)))
 
-        print("Y tick labels", y_tick_labels)
+        self.c_logger.debug("Y tick labels: {}".format(y_tick_labels))
 
         plus_minus__time_axis = self.axis_array[1]
 
