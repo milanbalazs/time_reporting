@@ -40,20 +40,31 @@ def main(c_logger=None):
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
     window.title("Time reporting")
     # change ttk theme to 'clam' to fix issue with downarrow button
-    style = ttk.Style(window)
-    style.theme_use("alt")
-    style.configure("BW.TLabel", foreground="black", background="white")
-    style.configure(
-        "C.TButton", font=("calibri", 12, "bold"), background="red",
+    style = ttk.Style()
+
+    style.theme_create(
+        "MyStyle",
+        parent="alt",
+        settings={
+            "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0]}},
+            "TNotebook.Tab": {"configure": {"padding": [50, 2]},},
+        },
     )
+
+    style.theme_use("MyStyle")
     note = ttk.Notebook(window)
     main_tab = tk.Frame(note)
     user_config_tab = tk.Frame(note)
     note.add(main_tab, text="Main")
-    note.add(user_config_tab, text="User")
-    note.pack()
+    note.add(user_config_tab, text="User Config")
+    note.grid(row=0, column=0)
+
+    def conf(event):
+        note.config(height=window.winfo_height(), width=window.winfo_width())
+
     start = main_tab_module.MainWindow(main_tab, c_logger=c_logger)
     window.protocol("WM_DELETE_WINDOW", start.quit_from_app)
+    window.bind("<Configure>", conf)
     window.mainloop()
 
 

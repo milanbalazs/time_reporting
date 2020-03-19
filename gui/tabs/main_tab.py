@@ -136,15 +136,15 @@ class MainWindow(object):
         self.visualisation_to_calendar_instance = self.__set_calendar()
         self.visualisation_to_calendar_instance.grid(row=7, column=1)
 
-        set_button = ttk.Button(
+        set_button = tk.Button(
             self.main_window,
             text="Start visualisation",
             command=lambda: self.__start_visualisation(),
         )
         set_button.grid(row=8, column=0, columnspan=2)
 
-        set_button = ttk.Button(
-            self.main_window, text="Exit", style="C.TButton", command=lambda: self.quit_from_app(),
+        set_button = tk.Button(
+            self.main_window, width=15, text="Exit", bg="red", command=lambda: self.quit_from_app(),
         )
         set_button.grid(row=9, column=0, columnspan=2)
 
@@ -241,7 +241,7 @@ class MainWindow(object):
         self.leaving_time_picker_instance = self.__set_time_picker("17", "20")
         self.leaving_time_picker_instance.grid(row=3, column=1)
 
-        set_button = ttk.Button(
+        set_button = tk.Button(
             self.main_window,
             text="Set new record",
             command=lambda: self.__set_time_into_config_json(),
