@@ -47,7 +47,7 @@ def main(c_logger=None):
         parent="alt",
         settings={
             "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0]}},
-            "TNotebook.Tab": {"configure": {"padding": [50, 2]},},
+            "TNotebook.Tab": {"configure": {"padding": [50, 2]}},
         },
     )
 
@@ -57,7 +57,7 @@ def main(c_logger=None):
     user_config_tab = tk.Frame(note)
     note.add(main_tab, text="Main")
     note.add(user_config_tab, text="User Config")
-    note.grid(row=0, column=0)
+    note.pack()
 
     def conf(event):
         note.config(height=window.winfo_height(), width=window.winfo_width())
