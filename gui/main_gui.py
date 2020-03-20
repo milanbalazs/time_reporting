@@ -39,6 +39,7 @@ def main(c_logger=None):
     window = tk.Tk()
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
     window.title("Time reporting")
+
     # change ttk theme to 'clam' to fix issue with downarrow button
     style = ttk.Style()
 
@@ -53,10 +54,15 @@ def main(c_logger=None):
 
     style.theme_use("MyStyle")
     note = ttk.Notebook(window)
+
     main_tab = tk.Frame(note)
+    report_config_tab = tk.Frame(note)
     user_config_tab = tk.Frame(note)
+
     note.add(main_tab, text="Main")
+    note.add(report_config_tab, text="Report")
     note.add(user_config_tab, text="User Config")
+
     note.pack()
 
     def conf(event):
@@ -64,7 +70,9 @@ def main(c_logger=None):
 
     start = main_tab_module.MainWindow(main_tab, c_logger=c_logger)
     window.protocol("WM_DELETE_WINDOW", start.quit_from_app)
+
     window.bind("<Configure>", conf)
+
     window.mainloop()
 
 

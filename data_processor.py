@@ -11,20 +11,33 @@ sys.path.append(PATH_OF_FILE_DIR)  # noqa: E402
 from color_logger import ColoredLogger
 
 CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "conf", "time_data.json")
-DEFAULT_LOGGER = ColoredLogger(os.path.basename(__file__))
 FMT = "%H:%M"
 DATE_FORMAT = "%Y.%m.%d."
 
 
 class DataProcessor(object):
-    def __init__(self, config: str = CONFIG_FILE, c_logger: ColoredLogger = DEFAULT_LOGGER):
+    def __init__(self, config: str = CONFIG_FILE, c_logger: ColoredLogger = None):
         self.config = config
-        self.c_logger = c_logger
+        self.c_logger = c_logger if c_logger else self.__set_up_default_logger()
         self.c_logger.info("Getting config file: {}".format(self.config))
         self.c_logger.info("Starting to check config file existence.")
         self._check_config_exist()
         self.c_logger.info("Starting to get date from config file.")
         self.data = self.get_data()
+
+    @staticmethod
+    def __set_up_default_logger():
+        """
+        Set-up a default logger if it is not provided as parameter.
+        :return: Instance of ColoredLogger
+        """
+
+        # Set-up the main logger instance.
+        path_of_log_file = os.path.join(PATH_OF_FILE_DIR, "logs", "data_processor.log")
+        return_logger = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
+        return_logger.info("Default logger has been set-up in data_processor module.")
+
+        return return_logger
 
     def _check_config_exist(self):
         self.c_logger.info("Start to check if getting config file exists.")

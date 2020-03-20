@@ -99,7 +99,7 @@ class MainWindow(object):
         """
 
         self.c_logger.info("Starting to set the resizable rows and columns")
-        for x in range(0, 11):
+        for x in range(0, 15):
             self.c_logger.debug("Set the {}. row and column resizable.".format(x))
             self.main_window.grid_columnconfigure(x, weight=1)
             self.main_window.grid_rowconfigure(x, weight=1)
@@ -113,13 +113,17 @@ class MainWindow(object):
 
         self.c_logger.info("Starting to create visualisation GUI section.")
 
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=5, column=0, columnspan=2, sticky="we"
+        )
+
         visualisation_label = ttk.Label(
             self.main_window, text="Visualisation", font=("Helvetica", 16)
         )
-        visualisation_label.grid(row=5, column=0, columnspan=2)
+        visualisation_label.grid(row=6, column=0, columnspan=2, sticky="s")
 
         visualisation_from_date = ttk.Label(self.main_window, text="From")
-        visualisation_from_date.grid(row=6, column=0)
+        visualisation_from_date.grid(row=7, column=0, sticky="e", padx=5, pady=5)
 
         # Calculate the previous month to set the default 1 month visualisation.
         today = date.today()
@@ -128,25 +132,29 @@ class MainWindow(object):
         self.c_logger.info("Previous 31 days: {}".format(previous_month))
 
         self.visualisation_from_calendar_instance = self.__set_calendar(set_date=previous_month)
-        self.visualisation_from_calendar_instance.grid(row=6, column=1)
+        self.visualisation_from_calendar_instance.grid(row=7, column=1, sticky="w", padx=5, pady=5)
 
         visualisation_to_date = ttk.Label(self.main_window, text="To")
-        visualisation_to_date.grid(row=7, column=0)
+        visualisation_to_date.grid(row=8, column=0, sticky="e", padx=5, pady=5)
 
         self.visualisation_to_calendar_instance = self.__set_calendar()
-        self.visualisation_to_calendar_instance.grid(row=7, column=1)
+        self.visualisation_to_calendar_instance.grid(row=8, column=1, sticky="w", padx=5, pady=5)
 
         set_button = tk.Button(
             self.main_window,
             text="Start visualisation",
             command=lambda: self.__start_visualisation(),
         )
-        set_button.grid(row=8, column=0, columnspan=2)
+        set_button.grid(row=9, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=10, column=0, columnspan=2, sticky="we", pady=5
+        )
 
         set_button = tk.Button(
             self.main_window, width=15, text="Exit", bg="red", command=lambda: self.quit_from_app(),
         )
-        set_button.grid(row=9, column=0, columnspan=2)
+        set_button.grid(row=11, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("Visualisation GUI section has been created successfully.")
 
@@ -221,32 +229,32 @@ class MainWindow(object):
         create_label = ttk.Label(
             self.main_window, text="Create/Update data", font=("Helvetica", 16)
         )
-        create_label.grid(row=0, column=0, columnspan=2)
+        create_label.grid(row=0, column=0, columnspan=2, sticky="s")
 
         new_data_date_label = ttk.Label(self.main_window, text="Date")
-        new_data_date_label.grid(row=1, column=0)
+        new_data_date_label.grid(row=1, column=0, sticky="e", padx=5, pady=5)
 
         self.new_data_calendar_instance = self.__set_calendar()
-        self.new_data_calendar_instance.grid(row=1, column=1)
+        self.new_data_calendar_instance.grid(row=1, column=1, sticky="w", padx=5, pady=5)
 
         arrive_time_label = ttk.Label(self.main_window, text="Arriving")
-        arrive_time_label.grid(row=2, column=0)
+        arrive_time_label.grid(row=2, column=0, sticky="e", padx=5, pady=5)
 
         self.arrive_time_picker_instance = self.__set_time_picker("9", "0")
-        self.arrive_time_picker_instance.grid(row=2, column=1)
+        self.arrive_time_picker_instance.grid(row=2, column=1, sticky="w", padx=5, pady=5)
 
         leaving_time_label = ttk.Label(self.main_window, text="Leaving")
-        leaving_time_label.grid(row=3, column=0)
+        leaving_time_label.grid(row=3, column=0, sticky="e", padx=5, pady=5)
 
         self.leaving_time_picker_instance = self.__set_time_picker("17", "20")
-        self.leaving_time_picker_instance.grid(row=3, column=1)
+        self.leaving_time_picker_instance.grid(row=3, column=1, sticky="w", padx=5, pady=5)
 
         set_button = tk.Button(
             self.main_window,
             text="Set new record",
             command=lambda: self.__set_time_into_config_json(),
         )
-        set_button.grid(row=4, column=0, columnspan=2)
+        set_button.grid(row=4, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("New record setting GUI section has been successfully created.")
 
@@ -390,6 +398,7 @@ class MainWindow(object):
         canvas = FigureCanvasTkAgg(self.plotterobj, master=self.main_window)
         self.c_logger.info("The figure has been plotted onto TK canvas successfully.")
         self.c_logger.debug("The 'FigureCanvasTkAgg' object: {}".format(canvas))
-        canvas.get_tk_widget().grid(row=0, column=2, rowspan=10, sticky="nsew")
+        # The "rowspan" should be the same as number of used rows.
+        canvas.get_tk_widget().grid(row=0, column=2, rowspan=12, sticky="nsew")
         canvas.draw()
         self.c_logger.info("The complete figure has been integrated into GUI successfully.")
