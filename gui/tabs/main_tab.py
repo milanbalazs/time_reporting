@@ -38,12 +38,7 @@ from plotter3 import Plotter3
 from time_picker import TimePicker
 from date_entry import MyDateEntry
 
-
 matplotlib.use("TkAgg")
-
-# Set test data set
-TEST_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "..", "conf", "time_data_test.json")
-TEST_RUNNING = False
 
 
 class MainWindow(object):
@@ -51,12 +46,13 @@ class MainWindow(object):
     This class contains the all Main Window related attributes.
     """
 
-    def __init__(self, main_window, c_logger=None):
+    def __init__(self, main_window, c_logger=None, data_processor=None):
         """
         Init method of the 'MainWindow' class.
         :param main_window: Instance of the main Tk window.
         :param c_logger: Logger instance (ColoredLogger type is recommended).
                          Default is MAIN_LOGGER (Global variable.)
+        :param data_processor: Instance of DataProcessor module.
         """
 
         self.c_logger = c_logger if c_logger else self.__set_up_default_logger()
@@ -64,10 +60,9 @@ class MainWindow(object):
         self.c_logger.info("Get main window: {}".format(main_window))
 
         self.c_logger.info("Creating DataProcessor instance.")
-        if TEST_RUNNING:
-            self.data_processor = DataProcessor(c_logger=self.c_logger, config=TEST_CONFIG_FILE)
-        else:
-            self.data_processor = DataProcessor(c_logger=self.c_logger)
+        self.data_processor = (
+            data_processor if data_processor else DataProcessor(c_logger=self.c_logger)
+        )
         self.c_logger.info("DataProcessor instance successfully created.")
 
         self.__set_resizable()
@@ -95,6 +90,7 @@ class MainWindow(object):
         """
         The the rows and columns to be configurable (resizable).
         10 rows and 10 columns are set to resizable.
+        TODO: Make common method from it. It is used in more places.
         :return: None
         """
 
@@ -108,6 +104,7 @@ class MainWindow(object):
     def __create_visualisation_gui_section(self):
         """
         Create the visualisation related GUI section and render it to the main window.
+        TODO: Make common method from it. It is used in more places.
         :return: None
         """
 
@@ -118,7 +115,7 @@ class MainWindow(object):
         )
 
         visualisation_label = ttk.Label(
-            self.main_window, text="Visualisation", font=("Helvetica", 16)
+            self.main_window, text="Visualisation", font=("Helvetica", 16, "bold")
         )
         visualisation_label.grid(row=6, column=0, columnspan=2, sticky="s")
 
@@ -146,15 +143,6 @@ class MainWindow(object):
             command=lambda: self.__start_visualisation(),
         )
         set_button.grid(row=9, column=0, columnspan=2, sticky="n", padx=5, pady=5)
-
-        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=10, column=0, columnspan=2, sticky="we", pady=5
-        )
-
-        set_button = tk.Button(
-            self.main_window, width=15, text="Exit", bg="red", command=lambda: self.quit_from_app(),
-        )
-        set_button.grid(row=11, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("Visualisation GUI section has been created successfully.")
 
@@ -210,18 +198,11 @@ class MainWindow(object):
         self.plot()
         self.c_logger.info("The figure has been successfully plotted to TK canvas.")
 
-    def quit_from_app(self):
-        """
-        Quit from application.
-        :return: None
-        """
-
-        self.c_logger.info("Quit from application.")
-        self.main_window.quit()
-
     def set_available_data(self, event):
         """
         This method sets the time data for selected date (If it's available in data-set).
+        This method is a call-back of Tk event.
+        :param event: This method is a call-back of Tk event so this parameter is required.
         :return: None
         """
 
@@ -268,7 +249,9 @@ class MainWindow(object):
         """
 
         self.c_logger.info("Starting to create the new record setting GUI section.")
-        create_label = ttk.Label(self.main_window, text="Create record", font=("Helvetica", 16))
+        create_label = ttk.Label(
+            self.main_window, text="Create record", font=("Helvetica", 16, "bold")
+        )
         create_label.grid(row=0, column=0, columnspan=2, sticky="s")
 
         new_data_date_label = ttk.Label(self.main_window, text="Date")
