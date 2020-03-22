@@ -219,6 +219,48 @@ class MainWindow(object):
         self.c_logger.info("Quit from application.")
         self.main_window.quit()
 
+    def set_available_data(self, event):
+        """
+        This method sets the time data for selected date (If it's available in data-set).
+        :return: None
+        """
+
+        self.c_logger.info(
+            "Start to set the time date based on the selected date. "
+            "It's an event triggered call back."
+        )
+
+        current_selected_date = self.__get_date_from_calendar(
+            self.new_data_calendar_instance
+        ).replace(" ", "")
+
+        self.c_logger.debug("The selected date: {}".format(current_selected_date))
+
+        arriving, leaving = self.data_processor.get_arriving_leaving_times_based_on_date(
+            current_selected_date
+        )
+
+        self.c_logger.debug(
+            "The times for the date: Arriving: {} ; Leaving: {}".format(arriving, leaving)
+        )
+
+        arriving_h = arriving.split(":")[0]
+        arriving_m = arriving.split(":")[1]
+
+        leaving_h = leaving.split(":")[0]
+        leaving_m = leaving.split(":")[1]
+
+        self.c_logger.debug(
+            "Hours: Arr: {} , Lea: {} ; Mins: Arr: {} , Lea: {}".format(
+                arriving_h, arriving_m, leaving_h, leaving_m
+            )
+        )
+
+        self.arrive_time_picker_instance.set_time(arriving_h, arriving_m)
+        self.leaving_time_picker_instance.set_time(leaving_h, leaving_m)
+
+        self.c_logger.info("Successfully set the Arriving and Leaving times based on the date.")
+
     def __create_new_record_gui_section(self):
         """
         Create the visualisation related GUI section and render it to the main window.
@@ -226,9 +268,7 @@ class MainWindow(object):
         """
 
         self.c_logger.info("Starting to create the new record setting GUI section.")
-        create_label = ttk.Label(
-            self.main_window, text="Create/Update data", font=("Helvetica", 16)
-        )
+        create_label = ttk.Label(self.main_window, text="Create record", font=("Helvetica", 16))
         create_label.grid(row=0, column=0, columnspan=2, sticky="s")
 
         new_data_date_label = ttk.Label(self.main_window, text="Date")
@@ -236,6 +276,8 @@ class MainWindow(object):
 
         self.new_data_calendar_instance = self.__set_calendar()
         self.new_data_calendar_instance.grid(row=1, column=1, sticky="w", padx=5, pady=5)
+
+        self.new_data_calendar_instance.bind("<<DateEntrySelected>>", self.set_available_data)
 
         arrive_time_label = ttk.Label(self.main_window, text="Arriving")
         arrive_time_label.grid(row=2, column=0, sticky="e", padx=5, pady=5)
@@ -250,9 +292,7 @@ class MainWindow(object):
         self.leaving_time_picker_instance.grid(row=3, column=1, sticky="w", padx=5, pady=5)
 
         set_button = tk.Button(
-            self.main_window,
-            text="Set new record",
-            command=lambda: self.__set_time_into_config_json(),
+            self.main_window, text="Set record", command=lambda: self.__set_time_into_config_json(),
         )
         set_button.grid(row=4, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 

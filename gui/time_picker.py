@@ -11,6 +11,8 @@ except ImportError:
     import Tkinter as tk
     from Tkinter import messagebox
 
+# TODO: Pass the logger to this module.
+
 
 class TimePicker(ttk.Frame):
     """
@@ -40,7 +42,7 @@ class TimePicker(ttk.Frame):
         self.hour.grid()
         self.min.grid(row=0, column=1)
 
-    def trace_var(self):
+    def trace_var(self, *args):
         """
         Count the hours in case of 59 minutes.
         :return: None
@@ -61,6 +63,30 @@ class TimePicker(ttk.Frame):
 
         messagebox.showerror(title, message)
 
+    def set_time(self, hours, minutes):
+        """
+        This method sets the current time (Value of Time picker).
+        :return: None
+        """
+
+        # If the hour counter is greater than 23 or it is less than 0.
+        if 23 < int(hours) or int(hours) < 0:
+            # Show an error message box and return nothing.
+            self.show_error(
+                title="Hours error", message="'{}' is not a valid hour.".format(hours),
+            )
+            return None
+        # If the minute counter is greater than 59 or it is less than 0.
+        if 59 < int(minutes) or int(minutes) < 0:
+            # Show an error message box and return nothing.
+            self.show_error(
+                title="Minutes error", message="'{}' is not a valid minute.".format(minutes),
+            )
+            return None
+
+        self.hourstr.set(str(hours))
+        self.minstr.set(str(minutes))
+
     def get_time(self):
         """
         This method provides the current time (Value of Time picker).
@@ -71,7 +97,7 @@ class TimePicker(ttk.Frame):
         if 23 < int(self.hourstr.get()) or int(self.hourstr.get()) < 0:
             # Show an error message box and return nothing.
             self.show_error(
-                title="Hour error",
+                title="Hours error",
                 message="'{}' is not a valid hour.".format(int(self.hourstr.get())),
             )
             return None
@@ -79,7 +105,7 @@ class TimePicker(ttk.Frame):
         if 59 < int(self.minstr.get()) or int(self.minstr.get()) < 0:
             # Show an error message box and return nothing.
             self.show_error(
-                title="Hour error",
+                title="Minutes error",
                 message="'{}' is not a valid minute.".format(int(self.minstr.get())),
             )
             return None
