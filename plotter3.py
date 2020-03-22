@@ -115,7 +115,7 @@ class Plotter3(object):
         self.c_logger.info("Plottable dict has been created successfully.")
 
         self.fig, self.axis_array = plt.subplots(
-            1, 2, figsize=(11, 8), gridspec_kw={"width_ratios": [8, 1]}
+            1, 2, figsize=(12, 8), gridspec_kw={"width_ratios": [8, 1]}
         )
 
     @staticmethod

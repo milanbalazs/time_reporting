@@ -65,8 +65,6 @@ class MainWindow(object):
         )
         self.c_logger.info("DataProcessor instance successfully created.")
 
-        self.__set_resizable()
-
         self.__create_new_record_gui_section()
         self.__create_visualisation_gui_section()
 
@@ -86,19 +84,23 @@ class MainWindow(object):
 
         return return_logger
 
-    def __set_resizable(self):
+    def __set_resizable(self, row, col):
         """
         The the rows and columns to be configurable (resizable).
         10 rows and 10 columns are set to resizable.
         TODO: Make common method from it. It is used in more places.
+        :param: row: Number of configured rows.
+        :param col: Number of configured columns.
         :return: None
         """
 
         self.c_logger.info("Starting to set the resizable rows and columns")
-        for x in range(0, 15):
-            self.c_logger.debug("Set the {}. row and column resizable.".format(x))
-            self.main_window.grid_columnconfigure(x, weight=1)
+        for x in range(0, row + 1):
+            self.c_logger.debug("Set the {}. row resizable.".format(x))
             self.main_window.grid_rowconfigure(x, weight=1)
+        for x in range(0, col + 1):
+            self.c_logger.debug("Set the {}. column resizable.".format(x))
+            self.main_window.grid_columnconfigure(x, weight=1)
         self.c_logger.info("Successfully set the resizable rows and columns.")
 
     def __create_visualisation_gui_section(self):
@@ -143,6 +145,8 @@ class MainWindow(object):
             command=lambda: self.__start_visualisation(),
         )
         set_button.grid(row=9, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+
+        self.__set_resizable(row=9, col=2)
 
         self.c_logger.info("Visualisation GUI section has been created successfully.")
 
@@ -431,6 +435,6 @@ class MainWindow(object):
         self.c_logger.info("The figure has been plotted onto TK canvas successfully.")
         self.c_logger.debug("The 'FigureCanvasTkAgg' object: {}".format(canvas))
         # The "rowspan" should be the same as number of used rows.
-        canvas.get_tk_widget().grid(row=0, column=2, rowspan=12, sticky="nsew")
+        canvas.get_tk_widget().grid(row=0, column=2, rowspan=10, sticky="news")
         canvas.draw()
         self.c_logger.info("The complete figure has been integrated into GUI successfully.")
