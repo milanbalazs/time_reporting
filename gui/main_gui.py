@@ -41,7 +41,7 @@ def quit_from_app(main_window):
     :return: None
     """
 
-    print("Quit from application.")
+    print("Quit from Time Reporting application.")
     main_window.quit()
 
 

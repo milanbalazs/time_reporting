@@ -225,6 +225,15 @@ class MainWindow(object):
             "The times for the date: Arriving: {} ; Leaving: {}".format(arriving, leaving)
         )
 
+        if ("00:00", "00:00") == (arriving, leaving):
+            self.c_logger.debug(
+                "There is not data for {} date. " "Set default time.".format(current_selected_date)
+            )
+            # TODO: The hard-coded default time should come from the User config.
+            self.arrive_time_picker_instance.set_time("09", "00")
+            self.leaving_time_picker_instance.set_time("17", "20")
+            return
+
         arriving_h = arriving.split(":")[0]
         arriving_m = arriving.split(":")[1]
 
