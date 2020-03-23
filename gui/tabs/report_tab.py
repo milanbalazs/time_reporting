@@ -30,6 +30,7 @@ PATH_OF_FILE_DIR = os.path.join(os.path.realpath(os.path.dirname(__file__)))  # 
 # Append the required directories to PATH
 sys.path.append(PATH_OF_FILE_DIR)  # noqa: E402
 sys.path.append(os.path.join(PATH_OF_FILE_DIR, "..", ".."))  # noqa: E402
+sys.path.append(os.path.join(PATH_OF_FILE_DIR, "..", "..", "generators"))  # noqa: E402
 
 # Own modules imports
 from data_processor import DataProcessor
@@ -236,6 +237,57 @@ class ReportConfigTab(object):
 
         self.c_logger.info("The report generation GUI has been rendered successfully.")
 
+    @staticmethod
+    def __check_file_without_extension(file_name):
+        """
+        Check if the file is provided.
+        :return: True if the file name is valid else False.
+        """
+
+        file_name_without_ext = file_name.split(".")[0]
+        if not file_name_without_ext:
+            messagebox.showerror(
+                "Invalid file.", "The '{}' file is not in valid format.".format(file_name)
+            )
+            return False
+        return True
+
+    def __json_report_generation(self, start_date, stop_date, file_path):
+        """
+        This method handles the Json report generation attributes.
+        The generated file structure:
+            [
+                {
+                    "date": "2020.03.07.",
+                    "arriving": "09:30",
+                    "leaving": "17:10"
+                },
+                {
+                    "date": "2020.03.08.",
+                    "arriving": "00:00",
+                    "leaving": "00:00"
+                },
+                {
+                    "date": "2020.03.09.",
+                    "arriving": "00:00",
+                    "leaving": "00:00"
+                }
+            ]
+        :return: None
+        """
+
+        from json_generator import JsonReportGenerator
+
+        json_report_generator = JsonReportGenerator(
+            start_date=start_date,
+            stop_date=stop_date,
+            file_path=file_path,
+            c_logger=self.c_logger,
+            data_processor=self.data_processor,
+        )
+
+        json_report_generator.write_data()
+
     def __start_report_generation(self):
         """
         This method starts the report generation.
@@ -243,7 +295,32 @@ class ReportConfigTab(object):
         :return: None
         """
 
-        self.c_logger.info("Start to generate the report.")
+        self.c_logger.info("Starting to generate the report.")
+
+        required_file_type = self.file_type_picker.get_file_type().upper()
+
+        start_date = self.report_generation_from_calendar_instance.get().replace(" ", "")
+        stop_date = self.report_generation_to_calendar_instance.get().replace(" ", "")
+        file_name = self.report_generation_file_name_entry.get()
+        file_dir = self.directory_entry_text.get()
+
+        if not self.__check_file_without_extension(file_name=file_name):
+            return
+
+        file_path = os.path.join(file_dir, file_name)
+
+        if required_file_type == "JSON":
+            self.__json_report_generation(start_date, stop_date, file_path)
+        else:
+            # TODO: Implement the rest of possible report types.
+            return
+
+        messagebox.showinfo(
+            "{} report".format(required_file_type),
+            "{} report generation was successful.\nReport: {}".format(
+                required_file_type, file_path
+            ),
+        )
 
     def __set_calendar(self, set_date=None):
         """

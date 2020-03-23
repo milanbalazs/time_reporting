@@ -52,9 +52,9 @@ def main(c_logger=None):
         path_of_log_file = os.path.join(PATH_OF_FILE_DIR, "..", "..", "logs", "main_log.log")
         c_logger = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
     if TEST_RUNNING:
-        data_processor_instance = DataProcessor(config=TEST_CONFIG_FILE)
+        data_processor_instance = DataProcessor(config=TEST_CONFIG_FILE, c_logger=c_logger)
     else:
-        data_processor_instance = DataProcessor()
+        data_processor_instance = DataProcessor(c_logger=c_logger)
 
     window = tk.Tk()
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
