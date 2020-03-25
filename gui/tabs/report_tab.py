@@ -74,6 +74,9 @@ class ReportConfigTab(object):
         self.c_logger.info("DataProcessor instance successfully created.")
 
         self.__create_main_gui_section()
+        self.__create_personal_gui_section()
+        self.__create_horizontal_separator_lines()
+        self.__create_vertical_separator_lines()
 
     def __set_default_report_dir(self):
         """
@@ -127,6 +130,80 @@ class ReportConfigTab(object):
 
         return return_logger
 
+    def __create_vertical_separator_lines(self):
+        """
+        This method creates the vertical separator lines.
+        :return: None
+        """
+
+        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
+            row=0, column=4, rowspan=10, sticky="ns"
+        )
+
+    def __create_horizontal_separator_lines(self):
+        """
+        This method creates the horizontal separator lines.
+        :return: None
+        """
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=1, column=0, columnspan=4, sticky="we"
+        )
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=4, column=0, columnspan=4, sticky="we"
+        )
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=8, column=0, columnspan=4, sticky="we"
+        )
+
+    def __create_personal_gui_section(self):
+        """
+        This method created the personal data gui section of Report generation.
+        TODO: Split this method to smaller parts.
+        TODO: Put the nested functions into upper level (class level)
+        :return: None
+        """
+
+        self.c_logger.info("Starting to generate the main personal data section of report tab.")
+
+        personal_data_label = ttk.Label(
+            self.main_window, text="Personal data", font=("Helvetica", 16, "bold")
+        )
+
+        personal_data_label.grid(row=0, column=5, columnspan=1, sticky="s")
+
+        self.user_name_var = tk.IntVar()
+        user_name_checkbox = tk.Checkbutton(
+            self.main_window, text="Name", variable=self.user_name_var
+        )
+        user_name_checkbox.grid(row=2, column=5)
+
+        self.user_id_var = tk.IntVar()
+        user_id_checkbox = tk.Checkbutton(
+            self.main_window, text="User ID", variable=self.user_id_var
+        )
+        user_id_checkbox.grid(row=3, column=5)
+
+        self.user_birth_var = tk.IntVar()
+        user_birth_checkbox = tk.Checkbutton(
+            self.main_window, text="Birth date", variable=self.user_birth_var
+        )
+        user_birth_checkbox.grid(row=4, column=5)
+
+        self.user_department_var = tk.IntVar()
+        user_birth_checkbox = tk.Checkbutton(
+            self.main_window, text="Department", variable=self.user_department_var
+        )
+        user_birth_checkbox.grid(row=5, column=5)
+
+        self.user_position_var = tk.IntVar()
+        user_birth_checkbox = tk.Checkbutton(
+            self.main_window, text="Position", variable=self.user_position_var
+        )
+        user_birth_checkbox.grid(row=6, column=5)
+
     def __create_main_gui_section(self):
         """
         This method created the main gui section of Report generation.
@@ -135,14 +212,12 @@ class ReportConfigTab(object):
         :return: None
         """
 
+        self.c_logger.info("Starting to generate the main GUI section of report tab.")
+
         report_generation_label = ttk.Label(
             self.main_window, text="Report Generation", font=("Helvetica", 16, "bold")
         )
         report_generation_label.grid(row=0, column=0, columnspan=3, sticky="s")
-
-        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=1, column=0, columnspan=3, sticky="we"
-        )
 
         report_generation_from_date = ttk.Label(self.main_window, text="From")
         report_generation_from_date.grid(row=2, column=0, sticky="e", padx=5, pady=5)
@@ -166,10 +241,6 @@ class ReportConfigTab(object):
             row=3, column=1, sticky="w", padx=5, pady=5
         )
 
-        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=4, column=0, columnspan=3, sticky="we"
-        )
-
         report_generation_file_type_label = ttk.Label(self.main_window, text="File type")
         report_generation_file_type_label.grid(row=5, column=0, sticky="e", padx=5, pady=5)
 
@@ -181,7 +252,15 @@ class ReportConfigTab(object):
         self.report_generation_file_name_entry = ttk.Entry(self.main_window, width=80)
         self.report_generation_file_name_entry.grid(row=6, column=1, sticky="w", padx=5, pady=5)
 
+        self.c_logger.info("Generation the main GUI section of report tab was successful.")
+
         def set_file_extension(event=None):
+            """
+            Set the file extension in the file name entry.
+            :param event: The event which triggered this call-back.
+            :return: None
+            """
+
             self.report_generation_file_name_entry.delete(0, tk.END)
             self.report_generation_file_name_entry.insert(
                 0, ".{}".format(self.file_type_picker.get_file_type().lower())
@@ -210,6 +289,11 @@ class ReportConfigTab(object):
         )
 
         def __browse_button():
+            """
+            Set the path of the selected file to Entry.
+            :return: None
+            """
+
             filename = tk.filedialog.askdirectory()
             self.directory_entry_text.set(filename)
 
@@ -219,14 +303,13 @@ class ReportConfigTab(object):
 
         directory_browser_button.grid(row=7, column=2, sticky="w", padx=5, pady=5)
 
-        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=8, column=0, columnspan=3, sticky="we"
-        )
-
         report_generation_start_button = tk.Button(
             self.main_window,
-            text="Generate",
-            font="Helvetica 10 bold",
+            width=40,
+            height=2,
+            borderwidth=5,
+            text="GENERATE",
+            font="Helvetica 14 bold",
             command=lambda: self.__start_report_generation(),
         )
         report_generation_start_button.grid(
