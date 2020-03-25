@@ -171,8 +171,14 @@ class ReportConfigTab(object):
         personal_data_label = ttk.Label(
             self.main_window, text="Personal data", font=("Helvetica", 16, "bold")
         )
-
         personal_data_label.grid(row=0, column=5, columnspan=1, sticky="s")
+
+        personal_data_info_label = ttk.Label(
+            self.main_window,
+            text="The generated report will contain\nthe selected personal data.",
+            font=("Helvetica", 8),
+        )
+        personal_data_info_label.grid(row=1, column=5, columnspan=1, sticky="s")
 
         self.user_name_var = tk.IntVar()
         user_name_checkbox = tk.Checkbutton(
@@ -306,7 +312,7 @@ class ReportConfigTab(object):
         report_generation_start_button = tk.Button(
             self.main_window,
             width=40,
-            height=2,
+            height=1,
             borderwidth=5,
             text="GENERATE",
             font="Helvetica 14 bold",
