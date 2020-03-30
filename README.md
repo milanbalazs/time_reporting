@@ -5,11 +5,11 @@
 ![PythonBlack](https://github.com/milanbalazs/time_reporting/workflows/PythonBlack/badge.svg)
 ![PythonStyle](https://github.com/milanbalazs/time_reporting/workflows/PythonStyle/badge.svg)
 
-## Main window:
+## Main tab:
 
 ![Main window example](imgs/main_window_example.png)
 
-## Report window:
+## Report tab:
 
 ![Report window example](imgs/report_window_example.png)
 
