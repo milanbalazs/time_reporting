@@ -545,7 +545,10 @@ class Plotter3(object):
                     self.c_logger.debug("There is not an off day.")
                     working_time_axis.broken_barh(
                         [
-                            (single_dict["from"], single_dict["to"] - single_dict["from"] - single_dict["break"]),
+                            (
+                                single_dict["from"],
+                                single_dict["to"] - single_dict["from"] - single_dict["break"],
+                            ),
                             (single_dict["to"] - single_dict["break"], single_dict["break"]),
                             (single_dict["to"], single_dict["minus"] - single_dict["to"]),
                         ],
@@ -560,7 +563,10 @@ class Plotter3(object):
                 self.c_logger.debug("There are plus hours")
                 working_time_axis.broken_barh(
                     [
-                        (single_dict["from"], single_dict["to"] - single_dict["from"] - single_dict["break"]),
+                        (
+                            single_dict["from"],
+                            single_dict["to"] - single_dict["from"] - single_dict["break"],
+                        ),
                         (single_dict["to"] - single_dict["break"], single_dict["break"]),
                         (single_dict["to"], single_dict["plus"],),
                     ],

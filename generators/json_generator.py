@@ -77,10 +77,14 @@ class JsonReportGenerator(object):
 
         date_range = self.data_processor.get_time_range(self.start_date, self.stop_date)
         for single_date in date_range:
-            arriving, leaving, break_time = self.data_processor.get_arriving_leaving_break_times_based_on_date(
-                single_date
+            (
+                arriving,
+                leaving,
+                break_time,
+            ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(single_date)
+            data_structure.append(
+                {"date": single_date, "arriving": arriving, "leaving": leaving, "break": break_time}
             )
-            data_structure.append({"date": single_date, "arriving": arriving, "leaving": leaving, "break": break_time})
 
         self.c_logger.info("The Json data structure has been created successfully.")
 
