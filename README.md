@@ -2,8 +2,8 @@
 
 ## Badges:
 
-![CI](https://github.com/milanbalazs/time_reporting/workflows/PythonBlack/badge.svg)
-![CI](https://github.com/milanbalazs/time_reporting/workflows/PythonStyle/badge.svg)
+![PythonBlack](https://github.com/milanbalazs/time_reporting/workflows/PythonBlack/badge.svg)
+![PythonStyle](https://github.com/milanbalazs/time_reporting/workflows/PythonStyle/badge.svg)
 
 ## Main window:
 
@@ -11,7 +11,7 @@
 
 ## Report window:
 
-![Main window example](imgs/report_window_example.png)
+![Report window example](imgs/report_window_example.png)
 
 ## Usage:
 
