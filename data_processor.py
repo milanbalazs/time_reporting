@@ -115,11 +115,12 @@ class DataProcessor(object):
         self.c_logger.info("Successfully calculated the effective hours based on the Json config.")
         return return_list
 
-    def set_time(self, date, start, to):
+    def set_time(self, date, start, to, break_time):
         self.c_logger.info("Start to set a new record.")
         self.c_logger.info("Date: {} ; Type: {}".format(date, type(date)))
         self.c_logger.info("Arriving: {} ; Type: {}".format(start, type(start)))
         self.c_logger.info("Leaving: {} ; Type: {}".format(to, type(to)))
+        self.c_logger.info("Break: {} ; Type: {}".format(break_time, type(break_time)))
 
         item_found = False
 
@@ -130,13 +131,14 @@ class DataProcessor(object):
                     single_dict["date"] = date
                     single_dict["from"] = start
                     single_dict["to"] = to
+                    single_dict["break"] = break_time
                     item_found = True
                     break
             if item_found:
                 break
 
         if not item_found:
-            self.data.append({"date": date, "from": start, "to": to})
+            self.data.append({"date": date, "from": start, "to": to, "break": break_time})
 
         with open(self.config, "w") as opened_file:
             json.dump(self.data, opened_file)
@@ -156,7 +158,7 @@ class DataProcessor(object):
         self.c_logger.info("The date range has been calculated successfully.")
         return return_date_range
 
-    def get_arriving_leaving_times_based_on_date(self, date):
+    def get_arriving_leaving_break_times_based_on_date(self, date):
         self.c_logger.info("Starting to get arriving and leaving time based on date.")
         self.c_logger.info("Getting date: {}".format(date))
         for single_dict in self.data:
@@ -166,11 +168,11 @@ class DataProcessor(object):
                     self.c_logger.debug(
                         "Arriving: {} , Leaving: {}".format(single_dict["from"], single_dict["to"])
                     )
-                    return single_dict["from"], single_dict["to"]
+                    return single_dict["from"], single_dict["to"], single_dict["break"]
         self.c_logger.warning(
             "There is not time date for the '{}' date. Return '00:00', '00:00''".format(date)
         )
-        return "00:00", "00:00"
+        return "00:00", "00:00", "00:00"
 
     def validate_time_range(self, arriving, leaving):
         """

@@ -2,7 +2,7 @@
 This module contains the all plotting related implementations.
 Two subplots are created in this module:
     - The main figure which contains the Date/Time data
-    - The overtime figure which contains the plus or minus horus in the data ranga.
+    - The overtime figure which contains the plus or minus horus in the data range.
 """
 
 # Import built-in modules
@@ -12,7 +12,6 @@ import os
 import sys
 import json
 import datetime
-from datetime import datetime
 
 # Own modules imports
 
@@ -161,6 +160,55 @@ class Plotter3(object):
         self.c_logger.info("The X axis data from the config file has been successfully parsed.")
         return return_x_axis_config_data
 
+    def get_effective_hours_decreased_with_break(self, time_data):
+        """
+        This method provides the Effective hours which is decreased by break time.
+        :param time_data: The data structure which contains the time data.
+                    Required data structure:
+                        [
+                            {
+                                "date": "2020.03.30.",
+                                "from": "09:00",
+                                "to": "17:20",
+                                "break": "00:20"}
+                            },
+                            ...
+                            ...
+                        ]
+        :return:
+        """
+
+        pass
+
+    @staticmethod
+    def get_required_working_hours(time_data):
+        """
+        This method provides the Effective hours which is decreased by break time.
+        :param time_data: The data structure which contains the time data.
+                    Required data structure:
+                        [
+                            {
+                                "date": "2020.03.30.",
+                                "from": "09:00",
+                                "to": "17:20",
+                                "break": "00:20"}
+                            },
+                            ...
+                            ...
+                        ]
+        :return:
+        """
+
+        required_working_time = datetime.datetime.strptime(
+            time_data["break"], FMT
+        ) + datetime.timedelta(hours=8)
+
+        required_working_time = "{:02d}:{:02d}".format(
+            int(required_working_time.hour), int(required_working_time.minute)
+        )
+
+        return required_working_time
+
     def create_plottable_dict(self):
         """
         Creates a dictionary which contains the numbers instead of strings.
@@ -184,9 +232,9 @@ class Plotter3(object):
 
             self.c_logger.debug("Single dict from plot data: {}".format(single_dict))
 
-            time_delta = datetime.strptime(single_dict["to"], FMT) - datetime.strptime(
-                single_dict["from"], FMT
-            )
+            time_delta = datetime.datetime.strptime(
+                single_dict["to"], FMT
+            ) - datetime.datetime.strptime(single_dict["from"], FMT)
 
             self.c_logger.debug("Calculated time delta: {}".format(time_delta))
 
@@ -195,9 +243,12 @@ class Plotter3(object):
             ellapsed_mins = int(divmod(time_delta.total_seconds(), 60)[0]) - (ellapsed_hours * 60)
             time_in_office = "{:02d}:{:02d}".format(int(ellapsed_hours), int(ellapsed_mins))
 
-            effective_hours_delta = datetime.strptime(time_in_office, FMT) - datetime.strptime(
-                "08:00", FMT
-            )
+            required_working_time = self.get_required_working_hours(single_dict)
+            self.c_logger.debug("Required working time: {}".format(required_working_time))
+
+            effective_hours_delta = datetime.datetime.strptime(
+                time_in_office, FMT
+            ) - datetime.datetime.strptime(required_working_time, FMT)
 
             self.c_logger.debug(
                 (
@@ -222,9 +273,9 @@ class Plotter3(object):
 
             if effective_hours_delta.days < 0:
                 self.c_logger.debug("You have minus time")
-                effective_hours_delta = datetime.strptime("08:00", FMT) - datetime.strptime(
-                    time_in_office, FMT
-                )
+                effective_hours_delta = datetime.datetime.strptime(
+                    "08:00", FMT
+                ) - datetime.datetime.strptime(time_in_office, FMT)
 
                 ellapsed_hours = int(divmod(effective_hours_delta.total_seconds(), 3600)[0])
                 ellapsed_mins = int(divmod(effective_hours_delta.total_seconds(), 60)[0]) - (
@@ -232,7 +283,7 @@ class Plotter3(object):
                 )
 
                 plus_or_minus_time = "-{:02d}:{:02d}".format(
-                    int(ellapsed_hours), int(ellapsed_mins)
+                    abs(int(ellapsed_hours)), int(ellapsed_mins)
                 )
 
                 self.c_logger.debug(
@@ -248,6 +299,8 @@ class Plotter3(object):
 
             self.c_logger.debug("Time offset: {}".format(time_offset))
 
+            break_time = self.x_axis_config_data[single_dict["break"]]
+
             if "-" in plus_or_minus_time:
                 self.c_logger.debug("'-' character is in Plus/Minus time.")
                 minus_time = self.x_axis_config_data[plus_or_minus_time.replace("-", "")]
@@ -260,6 +313,7 @@ class Plotter3(object):
                         "to": self.x_axis_config_data[single_dict["to"]],
                         "minus": minus_time,
                         "plus": None,
+                        "break": break_time,
                         "plus_minus_human_readable": plus_or_minus_time,
                         "working_hours_human_readable": time_in_office,
                         "from_hours_human_readable": single_dict["from"],
@@ -276,6 +330,7 @@ class Plotter3(object):
                         "to": self.x_axis_config_data[single_dict["to"]] - plus_time,
                         "minus": None,
                         "plus": plus_time,
+                        "break": break_time,
                         "plus_minus_human_readable": "+{}".format(plus_or_minus_time),
                         "working_hours_human_readable": time_in_office,
                         "from_hours_human_readable": single_dict["from"],
@@ -353,7 +408,7 @@ class Plotter3(object):
                     )
                 )
 
-                over_time = datetime.strptime("00:00", FMT) - datetime.strptime(
+                over_time = datetime.datetime.strptime("00:00", FMT) - datetime.datetime.strptime(
                     single_dict["plus_minus_human_readable"].replace("-", ""), FMT
                 )
                 over_time_seconds += over_time.total_seconds()
@@ -367,7 +422,7 @@ class Plotter3(object):
                     single_dict["working_hours_human_readable"],
                 )
             )
-            over_time = datetime.strptime("00:00", FMT) - datetime.strptime(
+            over_time = datetime.datetime.strptime("00:00", FMT) - datetime.datetime.strptime(
                 single_dict["plus_minus_human_readable"].replace("+", ""), FMT
             )
             over_time_seconds -= over_time.total_seconds()
@@ -490,11 +545,12 @@ class Plotter3(object):
                     self.c_logger.debug("There is not an off day.")
                     working_time_axis.broken_barh(
                         [
-                            (single_dict["from"], single_dict["to"] - single_dict["from"]),
-                            (single_dict["to"], single_dict["minus"] - single_dict["to"],),
+                            (single_dict["from"], single_dict["to"] - single_dict["from"] - single_dict["break"]),
+                            (single_dict["to"] - single_dict["break"], single_dict["break"]),
+                            (single_dict["to"], single_dict["minus"] - single_dict["to"]),
                         ],
                         (y_place, 2),
-                        facecolors=("aqua", "red"),
+                        facecolors=("aqua", "orchid", "red"),
                         hatch="",
                     )
                     self.create_annotate(working_time_axis, y_place, single_dict)
@@ -504,11 +560,12 @@ class Plotter3(object):
                 self.c_logger.debug("There are plus hours")
                 working_time_axis.broken_barh(
                     [
-                        (single_dict["from"], single_dict["to"] - single_dict["from"]),
+                        (single_dict["from"], single_dict["to"] - single_dict["from"] - single_dict["break"]),
+                        (single_dict["to"] - single_dict["break"], single_dict["break"]),
                         (single_dict["to"], single_dict["plus"],),
                     ],
                     (y_place, 2),
-                    facecolors=("aqua", "lightgreen"),
+                    facecolors=("aqua", "orchid", "lightgreen"),
                     hatch="",
                 )
                 self.create_annotate(working_time_axis, y_place, single_dict)

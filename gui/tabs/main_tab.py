@@ -113,16 +113,16 @@ class MainWindow(object):
         self.c_logger.info("Starting to create visualisation GUI section.")
 
         ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=5, column=0, columnspan=2, sticky="we"
+            row=6, column=0, columnspan=2, sticky="we"
         )
 
         visualisation_label = ttk.Label(
             self.main_window, text="Visualisation", font=("Helvetica", 16, "bold")
         )
-        visualisation_label.grid(row=6, column=0, columnspan=2, sticky="s")
+        visualisation_label.grid(row=7, column=0, columnspan=2, sticky="s")
 
         visualisation_from_date = ttk.Label(self.main_window, text="From")
-        visualisation_from_date.grid(row=7, column=0, sticky="e", padx=5, pady=5)
+        visualisation_from_date.grid(row=8, column=0, sticky="e", padx=5, pady=5)
 
         # Calculate the previous month to set the default 1 month visualisation.
         today = date.today()
@@ -131,22 +131,22 @@ class MainWindow(object):
         self.c_logger.info("Previous 31 days: {}".format(previous_month))
 
         self.visualisation_from_calendar_instance = self.__set_calendar(set_date=previous_month)
-        self.visualisation_from_calendar_instance.grid(row=7, column=1, sticky="w", padx=5, pady=5)
+        self.visualisation_from_calendar_instance.grid(row=8, column=1, sticky="w", padx=5, pady=5)
 
         visualisation_to_date = ttk.Label(self.main_window, text="To")
-        visualisation_to_date.grid(row=8, column=0, sticky="e", padx=5, pady=5)
+        visualisation_to_date.grid(row=9, column=0, sticky="e", padx=5, pady=5)
 
         self.visualisation_to_calendar_instance = self.__set_calendar()
-        self.visualisation_to_calendar_instance.grid(row=8, column=1, sticky="w", padx=5, pady=5)
+        self.visualisation_to_calendar_instance.grid(row=9, column=1, sticky="w", padx=5, pady=5)
 
         set_button = tk.Button(
             self.main_window,
             text="Start visualisation",
             command=lambda: self.__start_visualisation(),
         )
-        set_button.grid(row=9, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+        set_button.grid(row=10, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
-        self.__set_resizable(row=9, col=2)
+        self.__set_resizable(row=10, col=2)
 
         self.c_logger.info("Visualisation GUI section has been created successfully.")
 
@@ -177,20 +177,27 @@ class MainWindow(object):
         plotting_list = []
         self.c_logger.info("Starting to parse dates one by one.")
         for single_date in date_range:
-            arriving, leaving = self.data_processor.get_arriving_leaving_times_based_on_date(
-                single_date
-            )
+            (
+                arriving,
+                leaving,
+                break_time,
+            ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(single_date)
             if not arriving or not leaving:
                 self.c_logger.warning(
                     "There is no arriving of leaving time for '()' date.".format(single_date)
                 )
                 arriving = "00:00"
                 leaving = "00:00"
+                break_time = "00:00"
             self.c_logger.info(
-                "Date: {} ; Arriving: {} ; Leaving: {}".format(single_date, arriving, leaving)
+                "Date: {} ; Arriving: {} ; Leaving: {} ; Break: {}".format(
+                    single_date, arriving, leaving, break_time
+                )
             )
 
-            plotting_list.append({"date": single_date, "from": arriving, "to": leaving})
+            plotting_list.append(
+                {"date": single_date, "from": arriving, "to": leaving, "break": break_time}
+            )
         self.c_logger.debug("Created plotting list: {}".format(plotting_list))
         self.c_logger.info("Starting to create 'Plotter3' instance.")
         self.plotter3 = Plotter3(plotting_list, c_logger=self.c_logger)
@@ -221,12 +228,18 @@ class MainWindow(object):
 
         self.c_logger.debug("The selected date: {}".format(current_selected_date))
 
-        arriving, leaving = self.data_processor.get_arriving_leaving_times_based_on_date(
+        (
+            arriving,
+            leaving,
+            break_time,
+        ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(
             current_selected_date
         )
 
         self.c_logger.debug(
-            "The times for the date: Arriving: {} ; Leaving: {}".format(arriving, leaving)
+            "The times for the date: Arriving: {} ; Leaving: {} ; Break: {}".format(
+                arriving, leaving, break_time
+            )
         )
 
         if ("00:00", "00:00") == (arriving, leaving):
@@ -236,6 +249,7 @@ class MainWindow(object):
             # TODO: The hard-coded default time should come from the User config.
             self.arrive_time_picker_instance.set_time("09", "00")
             self.leaving_time_picker_instance.set_time("17", "20")
+            self.break_time_picker_instance.set_time("00", "20")
             return
 
         arriving_h = arriving.split(":")[0]
@@ -244,14 +258,18 @@ class MainWindow(object):
         leaving_h = leaving.split(":")[0]
         leaving_m = leaving.split(":")[1]
 
+        break_time_h = break_time.split(":")[0]
+        break_time_m = break_time.split(":")[1]
+
         self.c_logger.debug(
-            "Hours: Arr: {} , Lea: {} ; Mins: Arr: {} , Lea: {}".format(
-                arriving_h, arriving_m, leaving_h, leaving_m
+            "Hours: Arr: {} , Lea: {} , Br: {}; Mins: Arr: {} , Lea: {} , Br: {}".format(
+                arriving_h, leaving_h, break_time_h, arriving_m, leaving_m, break_time_m
             )
         )
 
         self.arrive_time_picker_instance.set_time(arriving_h, arriving_m)
         self.leaving_time_picker_instance.set_time(leaving_h, leaving_m)
+        self.break_time_picker_instance.set_time(break_time_h, break_time_m)
 
         self.c_logger.info("Successfully set the Arriving and Leaving times based on the date.")
 
@@ -287,10 +305,16 @@ class MainWindow(object):
         self.leaving_time_picker_instance = self.__set_time_picker("17", "20")
         self.leaving_time_picker_instance.grid(row=3, column=1, sticky="w", padx=5, pady=5)
 
+        break_time_label = ttk.Label(self.main_window, text="Break")
+        break_time_label.grid(row=4, column=0, sticky="e", padx=5, pady=5)
+
+        self.break_time_picker_instance = self.__set_time_picker("00", "20")
+        self.break_time_picker_instance.grid(row=4, column=1, sticky="w", padx=5, pady=5)
+
         set_button = tk.Button(
             self.main_window, text="Set record", command=lambda: self.__set_time_into_config_json(),
         )
-        set_button.grid(row=4, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+        set_button.grid(row=5, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("New record setting GUI section has been successfully created.")
 
@@ -305,9 +329,10 @@ class MainWindow(object):
         current_selected_date = self.__get_date_from_calendar(self.new_data_calendar_instance)
         arriving_time = self.__get_time_from_time_picker(self.arrive_time_picker_instance)
         leaving_time = self.__get_time_from_time_picker(self.leaving_time_picker_instance)
+        break_time = self.__get_time_from_time_picker(self.break_time_picker_instance)
         self.c_logger.info(
-            "Current selected date: {} , Arriving: {} , Leaving: {}".format(
-                current_selected_date, arriving_time, leaving_time
+            "Current selected date: {} , Arriving: {} , Leaving: {}, Break: {}".format(
+                current_selected_date, arriving_time, leaving_time, break_time
             )
         )
         if not arriving_time or not leaving_time:
@@ -322,11 +347,11 @@ class MainWindow(object):
                 "The arriving time is earlier than leaving."
             )
             self.c_logger.error(error_msg)
-            messagebox.showerror("Wring time range", error_msg)
+            messagebox.showerror("Wrong time range", error_msg)
             return
         self.c_logger.info("Starting to set the new record into Json file.")
         self.data_processor.set_time(
-            current_selected_date.replace(" ", ""), arriving_time, leaving_time
+            current_selected_date.replace(" ", ""), arriving_time, leaving_time, break_time
         )
 
         self.__start_visualisation()
@@ -435,6 +460,6 @@ class MainWindow(object):
         self.c_logger.info("The figure has been plotted onto TK canvas successfully.")
         self.c_logger.debug("The 'FigureCanvasTkAgg' object: {}".format(canvas))
         # The "rowspan" should be the same as number of used rows.
-        canvas.get_tk_widget().grid(row=0, column=2, rowspan=10, sticky="news")
+        canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, sticky="news")
         canvas.draw()
         self.c_logger.info("The complete figure has been integrated into GUI successfully.")
