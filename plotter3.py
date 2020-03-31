@@ -209,6 +209,26 @@ class Plotter3(object):
 
         return required_working_time
 
+    def is_weekend(self, date):
+        """
+        This method provides the weekdays.
+        :param date: The ralated date.
+        :return: ?
+        """
+
+        self.c_logger.debug("Starint to check if the date is weekend.")
+
+        dt = datetime.datetime.strptime(date, '%Y.%m.%d.')
+
+        self.c_logger.debug("String date: {} ; DateTime: {} ; Day value: {}".format(date, dt, dt.weekday()))
+
+        if dt.weekday() in (5, 6):
+            self.c_logger.debug("{} - Weekend".format(date))
+            return True
+        else:
+            self.c_logger.debug("{} - Weekday".format(date))
+            return False
+
     def create_plottable_dict(self):
         """
         Creates a dictionary which contains the numbers instead of strings.
@@ -301,6 +321,7 @@ class Plotter3(object):
 
             break_time = self.x_axis_config_data[single_dict["break"]]
 
+            # TODO: The following if-else almost code duplication. Should be refactored!
             if "-" in plus_or_minus_time:
                 self.c_logger.debug("'-' character is in Plus/Minus time.")
                 minus_time = self.x_axis_config_data[plus_or_minus_time.replace("-", "")]
@@ -314,6 +335,7 @@ class Plotter3(object):
                         "minus": minus_time,
                         "plus": None,
                         "break": break_time,
+                        "weekend": self.is_weekend(single_dict["date"]),
                         "plus_minus_human_readable": plus_or_minus_time,
                         "working_hours_human_readable": time_in_office,
                         "from_hours_human_readable": single_dict["from"],
@@ -331,6 +353,7 @@ class Plotter3(object):
                         "minus": None,
                         "plus": plus_time,
                         "break": break_time,
+                        "weekend": self.is_weekend(single_dict["date"]),
                         "plus_minus_human_readable": "+{}".format(plus_or_minus_time),
                         "working_hours_human_readable": time_in_office,
                         "from_hours_human_readable": single_dict["from"],
@@ -515,7 +538,7 @@ class Plotter3(object):
         :return: None
         """
 
-        # TODO: Split this method more smaller and more understandable/readable mothods.
+        # TODO: Split this method more smaller and more understandable/readable methods.
         self.c_logger.info("Starting to plot the data")
         working_time_axis = self.axis_array[0]
         self.c_logger.info("Fig: {} , AX: {}".format(self.fig, working_time_axis))
@@ -525,6 +548,17 @@ class Plotter3(object):
         for single_dict in self.plotable_dict:
             self.c_logger.debug("Single dict: {}".format(single_dict))
             self.c_logger.debug("Y place: {}".format(y_place))
+            if single_dict["weekend"]:
+                # IT IS A WEEKEND DAY
+                self.c_logger.debug("This is a weekend day.")
+                working_time_axis.broken_barh(
+                    [
+                        (min(self.x_axis_config_data.values()), max(self.x_axis_config_data.values()))
+                    ],
+                    (y_place, 2),
+                    facecolors="lightgray",
+                )
+
             # IF WE HAVE MINUS HOURS
             if single_dict["minus"]:
                 self.c_logger.debug("There are minus hours.")
