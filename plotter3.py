@@ -218,9 +218,11 @@ class Plotter3(object):
 
         self.c_logger.debug("Starint to check if the date is weekend.")
 
-        dt = datetime.datetime.strptime(date, '%Y.%m.%d.')
+        dt = datetime.datetime.strptime(date, "%Y.%m.%d.")
 
-        self.c_logger.debug("String date: {} ; DateTime: {} ; Day value: {}".format(date, dt, dt.weekday()))
+        self.c_logger.debug(
+            "String date: {} ; DateTime: {} ; Day value: {}".format(date, dt, dt.weekday())
+        )
 
         if dt.weekday() in (5, 6):
             self.c_logger.debug("{} - Weekend".format(date))
@@ -553,7 +555,10 @@ class Plotter3(object):
                 self.c_logger.debug("This is a weekend day.")
                 working_time_axis.broken_barh(
                     [
-                        (min(self.x_axis_config_data.values()), max(self.x_axis_config_data.values()))
+                        (
+                            min(self.x_axis_config_data.values()),
+                            max(self.x_axis_config_data.values()),
+                        )
                     ],
                     (y_place, 2),
                     facecolors="lightgray",
@@ -563,6 +568,7 @@ class Plotter3(object):
             if single_dict["minus"]:
                 self.c_logger.debug("There are minus hours.")
                 # IF WE HAVE OFF DAY
+                # TODO: Decide what sohuld be done in case of off day. (Currently it is not visible)
                 if single_dict["minus"] == 480:
                     self.c_logger.debug("This is an off day.")
                     working_time_axis.broken_barh(
