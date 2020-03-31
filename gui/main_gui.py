@@ -89,8 +89,9 @@ def main(c_logger=None):
         window,
         width=30,
         text="EXIT",
-        bg="red",
-        font="Helvetica 10 bold",
+        bg="grey60",
+        activebackground="red",
+        font="Helvetica 12 bold",
         command=lambda: quit_from_app(window),
     )
 

@@ -14,6 +14,7 @@ import matplotlib
 import os
 import sys
 import datetime
+import configparser
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
 from datetime import date, timedelta
@@ -37,6 +38,7 @@ from color_logger import ColoredLogger
 from plotter3 import Plotter3
 from time_picker import TimePicker
 from date_entry import MyDateEntry
+from graph_settings import GraphSettings
 
 matplotlib.use("TkAgg")
 
@@ -65,6 +67,10 @@ class MainWindow(object):
         )
         self.c_logger.info("DataProcessor instance successfully created.")
 
+        self.graph_settings_config_parser = self.__set_up_graph_settings_config_parser()
+
+        self.graph_settings_top_level_window = None
+
         self.__create_new_record_gui_section()
         self.__create_visualisation_gui_section()
 
@@ -83,6 +89,22 @@ class MainWindow(object):
         return_logger.info("Default logger has been set-up in main_tab module.")
 
         return return_logger
+
+    def __set_up_graph_settings_config_parser(self):
+        """
+        This method creates the config parser for the graph settings.
+        TODO: Remove the hard-coded default graph config. It should come from user settings.
+        :return: configparser object.
+        """
+
+        self.c_logger.info("Starting to set-up the graph settings config parser.")
+
+        graph_settings_config = configparser.ConfigParser()
+        graph_settings_config.read(
+            os.path.join(PATH_OF_FILE_DIR, "..", "..", "conf", "graph_config_default.ini")
+        )
+
+        return graph_settings_config
 
     def __set_resizable(self, row, col):
         """
@@ -139,16 +161,57 @@ class MainWindow(object):
         self.visualisation_to_calendar_instance = self.__set_calendar()
         self.visualisation_to_calendar_instance.grid(row=9, column=1, sticky="w", padx=5, pady=5)
 
+        settings_button = tk.Button(
+            self.main_window, text="Settings", command=lambda: self.__graph_settings(),
+        )
+        settings_button.grid(row=10, column=0, columnspan=2, sticky="n", padx=5, pady=1)
+
         set_button = tk.Button(
             self.main_window,
             text="Start visualisation",
             command=lambda: self.__start_visualisation(),
         )
-        set_button.grid(row=10, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+        set_button.grid(row=11, column=0, columnspan=2, sticky="n", padx=5, pady=1)
 
-        self.__set_resizable(row=10, col=2)
+        self.__set_resizable(row=11, col=2)
 
         self.c_logger.info("Visualisation GUI section has been created successfully.")
+
+    def __graph_settings(self):
+        """
+        This method handles the graph settings window.
+        :return: None
+        """
+
+        if not self.graph_settings_top_level_window or not tk.Toplevel.winfo_exists(
+            self.graph_settings_top_level_window
+        ):
+            self.c_logger.info("Starting to configure the graph")
+            self.graph_settings_top_level_window = tk.Toplevel(self.main_window)
+            self.graph_settings_top_level_window.title("Graph settings")
+            GraphSettings(
+                self.graph_settings_top_level_window,
+                c_logger=self.c_logger,
+                graph_settings_config_parser=self.graph_settings_config_parser,
+            )
+
+            self.graph_settings_top_level_window.protocol(
+                "WM_DELETE_WINDOW",
+                lambda: self._top_level_closing_action(self.graph_settings_top_level_window),
+            )
+        else:
+            self.c_logger.warning("The Graph setting windows has been already opened!")
+
+    def _top_level_closing_action(self, top_level_obj):
+        """
+        This method handles if the top_level window has been closed.
+        :return: None
+        """
+
+        self.c_logger.info("Start the top level window closing flow.")
+
+        self.__start_visualisation()
+        top_level_obj.destroy()
 
     def __start_visualisation(self):
         """
@@ -460,6 +523,6 @@ class MainWindow(object):
         self.c_logger.info("The figure has been plotted onto TK canvas successfully.")
         self.c_logger.debug("The 'FigureCanvasTkAgg' object: {}".format(canvas))
         # The "rowspan" should be the same as number of used rows.
-        canvas.get_tk_widget().grid(row=0, column=2, rowspan=11, sticky="news")
+        canvas.get_tk_widget().grid(row=0, column=2, rowspan=12, sticky="news")
         canvas.draw()
         self.c_logger.info("The complete figure has been integrated into GUI successfully.")
