@@ -27,6 +27,7 @@ sys.path.append(os.path.join(PATH_OF_FILE_DIR, "..",))  # noqa: E402
 
 # Own modules imports
 from color_logger import ColoredLogger
+from file_type_picker import FileTypePicker
 
 
 class GraphSettingsDataStorage(object):
@@ -117,6 +118,7 @@ class GraphSettings(GraphSettingsDataStorage):
         self.graph_settings_file_path = graph_settings_file_path
         self._create_colors_gui_section()
         self._create_annotations_gui_section()
+        self._create_date_gui_section()
         self.save_and_cancel_button_gui()
 
         self.__create_horizontal_separator_lines()
@@ -144,6 +146,10 @@ class GraphSettings(GraphSettingsDataStorage):
             row=0, column=2, rowspan=6, sticky="ns"
         )
 
+        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
+            row=0, column=5, rowspan=6, sticky="ns"
+        )
+
     def __create_horizontal_separator_lines(self):
         """
         This method creates the horizontal separator lines.
@@ -151,7 +157,7 @@ class GraphSettings(GraphSettingsDataStorage):
         """
 
         ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=6, column=0, columnspan=5, sticky="we"
+            row=6, column=0, columnspan=7, sticky="we"
         )
 
     def _create_colors_gui_section(self):
@@ -243,7 +249,7 @@ class GraphSettings(GraphSettingsDataStorage):
 
     def _create_annotations_gui_section(self):
         """
-        Creating the Color related gui section.
+        Creating the Annotations related gui section.
         :return: None
         """
 
@@ -326,6 +332,80 @@ class GraphSettings(GraphSettingsDataStorage):
 
         self.c_logger.info("Annotations settings GUI section generation was successful.")
 
+    def _create_date_gui_section(self):
+        """
+        Creating the Date related gui section.
+        TODO: Add date format selector.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to create the date setting GUI section.")
+
+        annotation_config_label = ttk.Label(
+            self.main_window, text="Date", font=("Helvetica", 16, "bold")
+        )
+        annotation_config_label.grid(row=0, column=6, columnspan=2, sticky="s")
+
+        self.day_name_date_var = tk.IntVar()
+        self.day_name_date_var.set(self.minus_time_element)
+        minus_annotate_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Day name",
+            variable=self.day_name_date_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.day_name_date_var, conf_section="DATE", conf_option="day_name",
+            ),
+        )
+        minus_annotate_checkbox.grid(row=1, column=6)
+
+        self.date_format_picker_var = tk.StringVar()
+        self.date_format_picker_var.set(self.format_date)
+
+        # TODO: Extending the possible handled date formats.
+        possible_formats = ["%Y.%m.%d."]
+
+        self.date_format_picker_option = tk.OptionMenu(
+            self.main_window,
+            self.date_format_picker_var,
+            *possible_formats,
+            command=lambda _: self.set_date_format_picker_value(
+                variable=self.date_format_picker_var, conf_section="DATE", conf_option="format"
+            )
+        )
+        self.date_format_picker_option.grid(row=2, column=6, sticky="w", padx=5, pady=5)
+
+        self.c_logger.info("Date settings GUI section generation was successful.")
+
+    def set_date_format_picker_value(self, variable=None, conf_section=None, conf_option=None):
+        """
+        This is a callback of date format picker.
+        If a date picker changes this callback updates the configparser object.
+        :param variable: The reference of the related variable.
+        :param conf_section: Related section in the config file.
+        :param conf_option: Related options in the config file.
+        :return: None
+        """
+
+        self.c_logger.info("Update the date format picker variable in config file.")
+        self.c_logger.debug(
+            "Getting values: Variable: {} ; Section: {} ; Option: {}".format(
+                variable, conf_section, conf_option
+            )
+        )
+        self.c_logger.debug("Variable value: {}".format(variable.get()))
+
+        if conf_section and conf_option:
+            # TODO: The '%' character usage should be fixed in date format.
+            #  https://stackoverflow.com/questions/14340366/configparser-and-string-with
+            self.graph_settings_config_parser.set(
+                conf_section, conf_option, variable.get(),
+            )
+            return
+        self.c_logger.warning(
+            "The section of option parameter hasn't got. "
+            "The config file won't be updated with the new value."
+        )
+
     def set_checkbutton_value(self, variable, conf_section=None, conf_option=None):
         """
         This is a callback of check buttons.
@@ -363,10 +443,10 @@ class GraphSettings(GraphSettingsDataStorage):
         self.c_logger.info("Starting to generate the Save and Cancel buttons.")
 
         save_button = tk.Button(self.main_window, text="Save", command=self.update_config_file,)
-        save_button.grid(row=7, column=0, columnspan=5, sticky="n", padx=5, pady=5)
+        save_button.grid(row=7, column=0, columnspan=7, sticky="n", padx=5, pady=5)
 
         cancel_button = tk.Button(self.main_window, text="Cancel", command=self._quit_top_level,)
-        cancel_button.grid(row=8, column=0, columnspan=5, sticky="n", padx=5, pady=5)
+        cancel_button.grid(row=8, column=0, columnspan=7, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("The 'Save' and 'Cancel' button has been generated successfully.")
 
