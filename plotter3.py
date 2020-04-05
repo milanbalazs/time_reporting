@@ -33,7 +33,7 @@ class Plotter3(object):
     This class contains the all plotting related attributes.
     """
 
-    def __init__(self, plot_data, c_logger=None):
+    def __init__(self, plot_data, c_logger=None, graph_settings=None):
         """
         Init method of the 'Plotter3' class.
         :param plot_data: Data for the plotting.
@@ -52,9 +52,13 @@ class Plotter3(object):
                           ]
         :param c_logger: Logger instance (ColoredLogger type is recommended).
                          Default is DEFAULT_LOGGER (Global variable.)
+        :param graph_settings:  Instance of the graph settings parser.
+                                It contains the custom graph parameters.
         """
 
         self.c_logger = c_logger if c_logger else self.__set_up_default_logger()
+
+        self.graph_settings = graph_settings
 
         self.c_logger.debug("Getting plot data: {}".format(plot_data))
 
@@ -561,14 +565,14 @@ class Plotter3(object):
                         )
                     ],
                     (y_place, 2),
-                    facecolors="lightgray",
+                    facecolors=self.graph_settings.get("COLORS", "weekend"),
                 )
 
             # IF WE HAVE MINUS HOURS
             if single_dict["minus"]:
                 self.c_logger.debug("There are minus hours.")
                 # IF WE HAVE OFF DAY
-                # TODO: Decide what sohuld be done in case of off day. (Currently it is not visible)
+                # TODO: Decide what should be done in case of off day. (Currently it is not visible)
                 if single_dict["minus"] == 480:
                     self.c_logger.debug("This is an off day.")
                     working_time_axis.broken_barh(
@@ -593,7 +597,12 @@ class Plotter3(object):
                             (single_dict["to"], single_dict["minus"] - single_dict["to"]),
                         ],
                         (y_place, 2),
-                        facecolors=("aqua", "orchid", "red"),
+                        # Working-time, Break-time, Over-Time (Minus)
+                        facecolors=(
+                            self.graph_settings.get("COLORS", "working_time"),
+                            self.graph_settings.get("COLORS", "break_time"),
+                            self.graph_settings.get("COLORS", "minus_time"),
+                        ),
                         hatch="",
                     )
                     self.create_annotate(working_time_axis, y_place, single_dict)
@@ -611,7 +620,12 @@ class Plotter3(object):
                         (single_dict["to"], single_dict["plus"],),
                     ],
                     (y_place, 2),
-                    facecolors=("aqua", "orchid", "lightgreen"),
+                    # Working-time, Break-time, Over-Time (Minus)
+                    facecolors=(
+                        self.graph_settings.get("COLORS", "working_time"),
+                        self.graph_settings.get("COLORS", "break_time"),
+                        self.graph_settings.get("COLORS", "plus_time"),
+                    ),
                     hatch="",
                 )
                 self.create_annotate(working_time_axis, y_place, single_dict)

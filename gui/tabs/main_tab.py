@@ -48,13 +48,22 @@ class MainWindow(object):
     This class contains the all Main Window related attributes.
     """
 
-    def __init__(self, main_window, c_logger=None, data_processor=None):
+    def __init__(
+        self,
+        main_window,
+        c_logger=None,
+        data_processor=None,
+        graph_settings=None,
+        graph_settings_file_path=None,
+    ):
         """
         Init method of the 'MainWindow' class.
         :param main_window: Instance of the main Tk window.
+        :param graph_settings: Instance of the graph settings parser.
         :param c_logger: Logger instance (ColoredLogger type is recommended).
                          Default is MAIN_LOGGER (Global variable.)
         :param data_processor: Instance of DataProcessor module.
+        :param graph_settings_file_path: Path of the used graph settings config file.
         """
 
         self.c_logger = c_logger if c_logger else self.__set_up_default_logger()
@@ -67,7 +76,8 @@ class MainWindow(object):
         )
         self.c_logger.info("DataProcessor instance successfully created.")
 
-        self.graph_settings_config_parser = self.__set_up_graph_settings_config_parser()
+        self.graph_settings_config_parser = graph_settings
+        self.graph_settings_file_path = graph_settings_file_path
 
         self.graph_settings_top_level_window = None
 
@@ -89,22 +99,6 @@ class MainWindow(object):
         return_logger.info("Default logger has been set-up in main_tab module.")
 
         return return_logger
-
-    def __set_up_graph_settings_config_parser(self):
-        """
-        This method creates the config parser for the graph settings.
-        TODO: Remove the hard-coded default graph config. It should come from user settings.
-        :return: configparser object.
-        """
-
-        self.c_logger.info("Starting to set-up the graph settings config parser.")
-
-        graph_settings_config = configparser.ConfigParser()
-        graph_settings_config.read(
-            os.path.join(PATH_OF_FILE_DIR, "..", "..", "conf", "graph_config_default.ini")
-        )
-
-        return graph_settings_config
 
     def __set_resizable(self, row, col):
         """
@@ -193,25 +187,24 @@ class MainWindow(object):
                 self.graph_settings_top_level_window,
                 c_logger=self.c_logger,
                 graph_settings_config_parser=self.graph_settings_config_parser,
+                graph_settings_file_path=self.graph_settings_file_path,
             )
 
-            self.graph_settings_top_level_window.protocol(
-                "WM_DELETE_WINDOW",
-                lambda: self._top_level_closing_action(self.graph_settings_top_level_window),
-            )
+            self.graph_settings_top_level_window.bind("<Destroy>", self._top_level_closing_action)
         else:
             self.c_logger.warning("The Graph setting windows has been already opened!")
 
-    def _top_level_closing_action(self, top_level_obj):
+    def _top_level_closing_action(self, event):
         """
         This method handles if the top_level window has been closed.
         :return: None
         """
 
-        self.c_logger.info("Start the top level window closing flow.")
+        if event.widget == event.widget.winfo_toplevel():
 
-        self.__start_visualisation()
-        top_level_obj.destroy()
+            self.c_logger.info("Start the top level window closing flow.")
+
+            self.__start_visualisation()
 
     def __start_visualisation(self):
         """
@@ -263,7 +256,9 @@ class MainWindow(object):
             )
         self.c_logger.debug("Created plotting list: {}".format(plotting_list))
         self.c_logger.info("Starting to create 'Plotter3' instance.")
-        self.plotter3 = Plotter3(plotting_list, c_logger=self.c_logger)
+        self.plotter3 = Plotter3(
+            plotting_list, c_logger=self.c_logger, graph_settings=self.graph_settings_config_parser
+        )
         self.c_logger.info("'Plotter3' instance has been created successfully.")
         self.c_logger.info("Starting to get the figure object.")
         self.plotterobj = self.plotter3.plotting()

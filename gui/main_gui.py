@@ -5,6 +5,7 @@ Python3.6.x < Python version is required.
 
 import os
 import sys
+import configparser
 from tkinter import ttk
 
 try:
@@ -33,6 +34,35 @@ PATH_OF_WINDOW_ICON = os.path.join(PATH_OF_FILE_DIR, "..", "imgs", "window_icon.
 TEST_RUNNING = False
 # Set test data set
 TEST_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "time_data_test.json")
+# Set Graph config paths
+TEST_GRAPH_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "graph_config_test.ini")
+USER_GRAPH_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "graph_config.ini")
+DEFAULT_GRAPH_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "graph_config_default.ini")
+GRAPH_CONFIG_FILE = None
+
+
+def set_up_graph_settings_config_parser(c_logger, config_file=None):
+    """
+    This method creates the config parser for the graph settings.
+    :param c_logger: Instance of a common logger.
+    :param config_file: Path of the related config file.
+    :return: configparser object.
+    """
+
+    global GRAPH_CONFIG_FILE
+
+    c_logger.info("Starting to set-up the graph settings config parser.")
+
+    if not config_file:
+        config_file = USER_GRAPH_CONFIG_FILE
+
+    # Set the used config file!
+    GRAPH_CONFIG_FILE = config_file
+
+    graph_settings_config = configparser.ConfigParser()
+    graph_settings_config.read(config_file)
+
+    return graph_settings_config
 
 
 def quit_from_app(main_window):
@@ -53,8 +83,12 @@ def main(c_logger=None):
         c_logger = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
     if TEST_RUNNING:
         data_processor_instance = DataProcessor(config=TEST_CONFIG_FILE, c_logger=c_logger)
+        graph_config_parser = set_up_graph_settings_config_parser(
+            c_logger=c_logger, config_file=TEST_GRAPH_CONFIG_FILE
+        )
     else:
         data_processor_instance = DataProcessor(c_logger=c_logger)
+        graph_config_parser = set_up_graph_settings_config_parser(c_logger=c_logger)
 
     window = tk.Tk()
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
@@ -97,7 +131,13 @@ def main(c_logger=None):
 
     main_exit_button.pack(fill=tk.X)
 
-    main_tab_module.MainWindow(main_tab, c_logger=c_logger, data_processor=data_processor_instance)
+    main_tab_module.MainWindow(
+        main_tab,
+        c_logger=c_logger,
+        data_processor=data_processor_instance,
+        graph_settings=graph_config_parser,
+        graph_settings_file_path=GRAPH_CONFIG_FILE,
+    )
 
     report_tab_module.ReportConfigTab(
         report_config_tab, c_logger=c_logger, data_processor=data_processor_instance

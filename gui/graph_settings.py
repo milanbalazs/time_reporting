@@ -47,6 +47,7 @@ class GraphSettingsDataStorage(object):
         self.break_time_color = self.graph_settings_config_parser.get("COLORS", "break_time")
         self.plus_time_color = self.graph_settings_config_parser.get("COLORS", "plus_time")
         self.minus_time_color = self.graph_settings_config_parser.get("COLORS", "minus_time")
+        self.weekend_color = self.graph_settings_config_parser.get("COLORS", "weekend")
 
         # [TIME_ELEMENTS]
         self.arriving_element = self.graph_settings_config_parser.getboolean(
@@ -92,13 +93,20 @@ class GraphSettings(GraphSettingsDataStorage):
     This class contains the all Graph Settings related attributes.
     """
 
-    def __init__(self, main_window, c_logger=None, graph_settings_config_parser=None):
+    def __init__(
+        self,
+        main_window,
+        c_logger=None,
+        graph_settings_config_parser=None,
+        graph_settings_file_path=None,
+    ):
         """
         Init method of the 'GraphSettings' class.
         :param main_window: Instance of the main Tk window.
         :param c_logger: Logger instance (ColoredLogger type is recommended).
                          Default is MAIN_LOGGER (Global variable.)
         :param graph_settings_config_parser: The configparser object of the related config file.
+        :param graph_settings_file_path: Path of the used graph settings config file.
         """
 
         super(GraphSettings, self).__init__(graph_settings_config_parser)
@@ -106,7 +114,9 @@ class GraphSettings(GraphSettingsDataStorage):
         self.main_window = main_window
         self.c_logger.info("Get main window: {}".format(self.main_window))
         self.graph_settings_config_parser = graph_settings_config_parser
+        self.graph_settings_file_path = graph_settings_file_path
         self._create_colors_gui_section()
+        self.save_and_cancel_button_gui()
 
     @staticmethod
     def __set_up_default_logger():
@@ -121,6 +131,9 @@ class GraphSettings(GraphSettingsDataStorage):
         return_logger.info("Default logger has been set-up in graph_settings module.")
 
     def _create_colors_gui_section(self):
+
+        self.c_logger.info("Starting to create the color setting GUI section.")
+
         color_config_label = ttk.Label(
             self.main_window, text="Colors", font=("Helvetica", 16, "bold")
         )
@@ -134,6 +147,8 @@ class GraphSettings(GraphSettingsDataStorage):
                 set_var="working_time_color",
                 button=self.working_time_color_button,
                 color=self.working_time_color,
+                conf_section="COLORS",
+                conf_option="working_time",
             ),
         )
         self.working_time_color_button.grid(
@@ -148,6 +163,8 @@ class GraphSettings(GraphSettingsDataStorage):
                 set_var="break_time_color",
                 button=self.break_time_color_button,
                 color=self.break_time_color,
+                conf_section="COLORS",
+                conf_option="break_time",
             ),
         )
         self.break_time_color_button.grid(row=2, column=0, columnspan=2, sticky="n", padx=5, pady=5)
@@ -160,6 +177,8 @@ class GraphSettings(GraphSettingsDataStorage):
                 set_var="plus_time_color",
                 button=self.plus_time_color_button,
                 color=self.plus_time_color,
+                conf_section="COLORS",
+                conf_option="plus_time",
             ),
         )
         self.plus_time_color_button.grid(row=3, column=0, columnspan=2, sticky="n", padx=5, pady=5)
@@ -172,15 +191,78 @@ class GraphSettings(GraphSettingsDataStorage):
                 set_var="minus_time_color",
                 button=self.minus_time_color_button,
                 color=self.minus_time_color,
+                conf_section="COLORS",
+                conf_option="minus_time",
             ),
         )
         self.minus_time_color_button.grid(row=4, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
-    def _get_selected_color(self, set_var=None, button=None, color=None):
+        self.weekend_color_button = tk.Button(
+            self.main_window,
+            text="Weekends",
+            bg=self.weekend_color,
+            command=lambda: self._get_selected_color(
+                set_var="weekend_color",
+                button=self.weekend_color_button,
+                color=self.weekend_color,
+                conf_section="COLORS",
+                conf_option="weekend",
+            ),
+        )
+        self.weekend_color_button.grid(row=5, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+
+        self.c_logger.info("Color settings GUI section generation was successful.")
+
+    def save_and_cancel_button_gui(self):
+        """
+        This method handles the save/cancel button functionality.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to generate the Save and Cancel buttons.")
+
+        save_button = tk.Button(self.main_window, text="Save", command=self.update_config_file,)
+        save_button.grid(row=6, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+
+        cancel_button = tk.Button(self.main_window, text="Cancel", command=self._quit_top_level,)
+        cancel_button.grid(row=7, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+
+        self.c_logger.info("The 'Save' and 'Cancel' button has been generated successfully.")
+
+    def update_config_file(self):
+        """
+        This method update the related INI config file with the changed values.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to update the config file with the new values.")
+
+        with open(self.graph_settings_file_path, "w") as configfile:
+            self.graph_settings_config_parser.write(configfile)
+
+        self.c_logger.info("Config updating was successful. Destroying the top level GUI.")
+
+        self._quit_top_level()
+
+    def _quit_top_level(self):
+        """
+        Quit from this top level GUI.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to destroy the top level GUI.")
+
+        self.main_window.destroy()
+
+    def _get_selected_color(
+        self, set_var=None, button=None, color=None, conf_section=None, conf_option=None
+    ):
         """
         Providing the selected color.
         :return: Selected color
         """
+
+        self.c_logger.info("Starting to get the selected color.")
 
         color = colorchooser.askcolor(color=color)
         color_name = color[1]
@@ -189,4 +271,6 @@ class GraphSettings(GraphSettingsDataStorage):
             self.__setattr__(set_var, color_name)
         if button:
             button.configure(bg=color_name)
+        if conf_section and conf_option:
+            self.graph_settings_config_parser.set(conf_section, conf_option, color_name)
         return color_name
