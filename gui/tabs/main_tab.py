@@ -14,7 +14,6 @@ import matplotlib
 import os
 import sys
 import datetime
-import configparser
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import ttk
 from datetime import date, timedelta

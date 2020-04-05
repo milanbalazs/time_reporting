@@ -116,7 +116,11 @@ class GraphSettings(GraphSettingsDataStorage):
         self.graph_settings_config_parser = graph_settings_config_parser
         self.graph_settings_file_path = graph_settings_file_path
         self._create_colors_gui_section()
+        self._create_annotations_gui_section()
         self.save_and_cancel_button_gui()
+
+        self.__create_horizontal_separator_lines()
+        self.__create_vertical_separator_lines()
 
     @staticmethod
     def __set_up_default_logger():
@@ -130,7 +134,31 @@ class GraphSettings(GraphSettingsDataStorage):
         return_logger = ColoredLogger(os.path.basename(__file__), log_file_path=path_of_log_file)
         return_logger.info("Default logger has been set-up in graph_settings module.")
 
+    def __create_vertical_separator_lines(self):
+        """
+        This method creates the vertical separator lines.
+        :return: None
+        """
+
+        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
+            row=0, column=2, rowspan=6, sticky="ns"
+        )
+
+    def __create_horizontal_separator_lines(self):
+        """
+        This method creates the horizontal separator lines.
+        :return: None
+        """
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=6, column=0, columnspan=5, sticky="we"
+        )
+
     def _create_colors_gui_section(self):
+        """
+        Creating the Color related gui section.
+        :return: None
+        """
 
         self.c_logger.info("Starting to create the color setting GUI section.")
 
@@ -213,6 +241,119 @@ class GraphSettings(GraphSettingsDataStorage):
 
         self.c_logger.info("Color settings GUI section generation was successful.")
 
+    def _create_annotations_gui_section(self):
+        """
+        Creating the Color related gui section.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to create the annotations setting GUI section.")
+
+        annotation_config_label = ttk.Label(
+            self.main_window, text="Annotations", font=("Helvetica", 16, "bold")
+        )
+        annotation_config_label.grid(row=0, column=3, columnspan=2, sticky="s")
+
+        self.arriving_annotate_var = tk.IntVar()
+        self.arriving_annotate_var.set(self.arriving_element)
+        arriving_annotate_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Arriving",
+            variable=self.arriving_annotate_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.arriving_annotate_var,
+                conf_section="TIME_ELEMENTS",
+                conf_option="arriving",
+            ),
+        )
+        arriving_annotate_checkbox.grid(row=1, column=3)
+
+        self.leaving_annotate_var = tk.IntVar()
+        self.leaving_annotate_var.set(self.leaving_element)
+        leaving_annotate_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Leaving",
+            variable=self.leaving_annotate_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.leaving_annotate_var,
+                conf_section="TIME_ELEMENTS",
+                conf_option="leaving",
+            ),
+        )
+        leaving_annotate_checkbox.grid(row=2, column=3)
+
+        self.working_annotate_var = tk.IntVar()
+        self.working_annotate_var.set(self.working_time_element)
+        working_annotate_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Working-time",
+            variable=self.working_annotate_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.working_annotate_var,
+                conf_section="TIME_ELEMENTS",
+                conf_option="working_time",
+            ),
+        )
+        working_annotate_checkbox.grid(row=3, column=3)
+
+        self.plus_annotate_var = tk.IntVar()
+        self.plus_annotate_var.set(self.plus_time_element)
+        plus_annotate_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Plus-time",
+            variable=self.plus_annotate_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.plus_annotate_var,
+                conf_section="TIME_ELEMENTS",
+                conf_option="plus_time",
+            ),
+        )
+        plus_annotate_checkbox.grid(row=4, column=3)
+
+        self.minus_annotate_var = tk.IntVar()
+        self.minus_annotate_var.set(self.minus_time_element)
+        minus_annotate_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Minus-time",
+            variable=self.minus_annotate_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.minus_annotate_var,
+                conf_section="TIME_ELEMENTS",
+                conf_option="minus_time",
+            ),
+        )
+        minus_annotate_checkbox.grid(row=5, column=3)
+
+        self.c_logger.info("Annotations settings GUI section generation was successful.")
+
+    def set_checkbutton_value(self, variable, conf_section=None, conf_option=None):
+        """
+        This is a callback of check buttons.
+        If a checkbutton changes this callback updates the configparser object.
+        :param variable: The reference of the related variable.
+        :param conf_section: Related section in the config file.
+        :param conf_option: Related options in the config file.
+        :return: None
+        """
+
+        self.c_logger.info("Update the checkbutton variable in config file.")
+        self.c_logger.debug(
+            "Getting values: Variable: {} ; Section: {} ; Option: {}".format(
+                variable, conf_section, conf_option
+            )
+        )
+        self.c_logger.debug("Variable value: {}".format(variable.get()))
+
+        if conf_section and conf_option:
+            self.graph_settings_config_parser.set(
+                conf_section, conf_option, "True" if variable.get() else "False"
+            )
+            return
+        self.c_logger.warning(
+            "The section of option parameter hasn't got. "
+            "The config file won't be updated with the new value."
+        )
+
     def save_and_cancel_button_gui(self):
         """
         This method handles the save/cancel button functionality.
@@ -222,10 +363,10 @@ class GraphSettings(GraphSettingsDataStorage):
         self.c_logger.info("Starting to generate the Save and Cancel buttons.")
 
         save_button = tk.Button(self.main_window, text="Save", command=self.update_config_file,)
-        save_button.grid(row=6, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+        save_button.grid(row=7, column=0, columnspan=5, sticky="n", padx=5, pady=5)
 
         cancel_button = tk.Button(self.main_window, text="Cancel", command=self._quit_top_level,)
-        cancel_button.grid(row=7, column=0, columnspan=2, sticky="n", padx=5, pady=5)
+        cancel_button.grid(row=8, column=0, columnspan=5, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("The 'Save' and 'Cancel' button has been generated successfully.")
 
@@ -259,10 +400,22 @@ class GraphSettings(GraphSettingsDataStorage):
     ):
         """
         Providing the selected color.
+        :param set_var: Name of the variable in the data class.
+        :param button: Reference of the related button.
+        :param color: The current color of the element.
+                      This color will be the default of the color chooser.
+        :param conf_section: Related section in the config file.
+        :param conf_option: Related options in the config file.
         :return: Selected color
         """
 
         self.c_logger.info("Starting to get the selected color.")
+        self.c_logger.debug(
+            "Getting parameters: set_var: {}, button: {}, "
+            "color: {}, section: {}, option: {}".format(
+                set_var, button, color, conf_section, conf_option
+            )
+        )
 
         color = colorchooser.askcolor(color=color)
         color_name = color[1]
@@ -273,4 +426,9 @@ class GraphSettings(GraphSettingsDataStorage):
             button.configure(bg=color_name)
         if conf_section and conf_option:
             self.graph_settings_config_parser.set(conf_section, conf_option, color_name)
+        else:
+            self.c_logger.warning(
+                "The section of option parameter hasn't got. "
+                "The config file won't be updated with the new value."
+            )
         return color_name

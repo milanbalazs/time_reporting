@@ -393,23 +393,32 @@ class Plotter3(object):
             "Instance: {} , Y position: {} , Data: {}".format(instance, y_position, data)
         )
         if data["minus"]:
-            instance.annotate(data["plus_minus_human_readable"], xy=(data["minus"], y_position))
-            instance.annotate(
-                data["to_hours_human_readable"], xy=(data["to"] - 55, y_position),
-            )
+            if self.graph_settings.getboolean("TIME_ELEMENTS", "minus_time"):
+                instance.annotate(data["plus_minus_human_readable"], xy=(data["minus"], y_position))
+            if self.graph_settings.getboolean("TIME_ELEMENTS", "leaving"):
+                instance.annotate(
+                    data["to_hours_human_readable"], xy=(data["to"] - 55, y_position),
+                )
         else:
+            if self.graph_settings.getboolean("TIME_ELEMENTS", "plus_time"):
+                instance.annotate(
+                    data["plus_minus_human_readable"], xy=(data["to"] + data["plus"], y_position),
+                )
+            if self.graph_settings.getboolean("TIME_ELEMENTS", "leaving"):
+                instance.annotate(
+                    data["to_hours_human_readable"],
+                    xy=(data["to"] + data["plus"] - 60, y_position),
+                )
+
+        if self.graph_settings.getboolean("TIME_ELEMENTS", "working_time"):
             instance.annotate(
-                data["plus_minus_human_readable"], xy=(data["to"] + data["plus"], y_position),
+                data["working_hours_human_readable"], xy=(data["from"] - 60, y_position),
             )
+
+        if self.graph_settings.getboolean("TIME_ELEMENTS", "arriving"):
             instance.annotate(
-                data["to_hours_human_readable"], xy=(data["to"] + data["plus"] - 60, y_position),
+                data["from_hours_human_readable"], xy=(data["from"], y_position),
             )
-        instance.annotate(
-            data["working_hours_human_readable"], xy=(data["from"] - 60, y_position),
-        )
-        instance.annotate(
-            data["from_hours_human_readable"], xy=(data["from"], y_position),
-        )
         self.c_logger.info("Annotates have been created successfully.")
 
     def overtime_graph_plotting(self):
