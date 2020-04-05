@@ -27,7 +27,6 @@ sys.path.append(os.path.join(PATH_OF_FILE_DIR, "..",))  # noqa: E402
 
 # Own modules imports
 from color_logger import ColoredLogger
-from file_type_picker import FileTypePicker
 
 
 class GraphSettingsDataStorage(object):
