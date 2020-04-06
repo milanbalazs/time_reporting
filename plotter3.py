@@ -117,9 +117,13 @@ class Plotter3(object):
         self.plotable_dict = self.create_plottable_dict()
         self.c_logger.info("Plottable dict has been created successfully.")
 
-        self.fig, self.axis_array = plt.subplots(
-            1, 2, figsize=(12, 8), gridspec_kw={"width_ratios": [8, 1]}
-        )
+        if not self.graph_settings.getboolean("OVERTIME", "visible"):
+            self.fig, self.axis_array = plt.subplots(figsize=(10, 8))
+            self.axis_array = [self.axis_array]
+        else:
+            self.fig, self.axis_array = plt.subplots(
+                1, 2, figsize=(12, 8), gridspec_kw={"width_ratios": [8, 1]}
+            )
 
     @staticmethod
     def __set_up_default_logger():
@@ -522,11 +526,19 @@ class Plotter3(object):
 
         if over_time_seconds < 0:
             plus_minus__time_axis.bar(
-                [0], abs(over_time_seconds), align="center", alpha=0.5, color="red"
+                [0],
+                abs(over_time_seconds),
+                align="center",
+                alpha=None,
+                color=self.graph_settings.get("OVERTIME", "minus_time"),
             )
         else:
             plus_minus__time_axis.bar(
-                [0], abs(over_time_seconds), align="center", alpha=0.5, color="green"
+                [0],
+                abs(over_time_seconds),
+                align="center",
+                alpha=None,
+                color=self.graph_settings.get("OVERTIME", "plus_time"),
             )
 
     def plotting(self):
@@ -539,7 +551,8 @@ class Plotter3(object):
         """
 
         self.date_time_graph_plotting()
-        self.overtime_graph_plotting()
+        if self.graph_settings.getboolean("OVERTIME", "visible"):
+            self.overtime_graph_plotting()
         self.c_logger.info("Return the generated figure.")
 
         # Uncomment the below line if you want to test the plotting as a single file.

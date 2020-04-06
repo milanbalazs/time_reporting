@@ -118,6 +118,7 @@ class GraphSettings(GraphSettingsDataStorage):
         self._create_colors_gui_section()
         self._create_annotations_gui_section()
         self._create_date_gui_section()
+        self._create_overtime_gui_section()
         self.save_and_cancel_button_gui()
 
         self.__create_horizontal_separator_lines()
@@ -149,6 +150,10 @@ class GraphSettings(GraphSettingsDataStorage):
             row=0, column=5, rowspan=6, sticky="ns"
         )
 
+        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
+            row=0, column=7, rowspan=6, sticky="ns"
+        )
+
     def __create_horizontal_separator_lines(self):
         """
         This method creates the horizontal separator lines.
@@ -156,7 +161,7 @@ class GraphSettings(GraphSettingsDataStorage):
         """
 
         ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=6, column=0, columnspan=7, sticky="we"
+            row=6, column=0, columnspan=10, sticky="we"
         )
 
     def _create_colors_gui_section(self):
@@ -334,7 +339,6 @@ class GraphSettings(GraphSettingsDataStorage):
     def _create_date_gui_section(self):
         """
         Creating the Date related gui section.
-        TODO: Add date format selector.
         :return: None
         """
 
@@ -374,6 +378,67 @@ class GraphSettings(GraphSettingsDataStorage):
         self.date_format_picker_option.grid(row=2, column=6, sticky="w", padx=5, pady=5)
 
         self.c_logger.info("Date settings GUI section generation was successful.")
+
+    def _create_overtime_gui_section(self):
+        """
+        Creating the Overtime related gui section.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to create the overtime setting GUI section.")
+
+        annotation_config_label = ttk.Label(
+            self.main_window, text="Overtime", font=("Helvetica", 16, "bold")
+        )
+        annotation_config_label.grid(row=0, column=8, columnspan=2, sticky="s")
+
+        self.over_time_graph_visible_var = tk.IntVar()
+        self.over_time_graph_visible_var.set(self.visible_overtime)
+        over_time_graph_visible_checkbox = tk.Checkbutton(
+            self.main_window,
+            text="Visible",
+            variable=self.over_time_graph_visible_var,
+            command=lambda: self.set_checkbutton_value(
+                variable=self.over_time_graph_visible_var,
+                conf_section="OVERTIME",
+                conf_option="visible",
+            ),
+        )
+        over_time_graph_visible_checkbox.grid(row=1, column=8)
+
+        self.over_time_minus_color_button = tk.Button(
+            self.main_window,
+            text="Minus overtime",
+            bg=self.minus_time_overtime,
+            command=lambda: self._get_selected_color(
+                set_var="minus_time_overtime",
+                button=self.over_time_minus_color_button,
+                color=self.minus_time_overtime,
+                conf_section="OVERTIME",
+                conf_option="minus_time",
+            ),
+        )
+        self.over_time_minus_color_button.grid(
+            row=2, column=8, columnspan=2, sticky="n", padx=5, pady=5
+        )
+
+        self.over_time_plus_color_button = tk.Button(
+            self.main_window,
+            text="Plus overtime",
+            bg=self.plus_time_overtime,
+            command=lambda: self._get_selected_color(
+                set_var="plus_time_overtime",
+                button=self.over_time_plus_color_button,
+                color=self.plus_time_overtime,
+                conf_section="OVERTIME",
+                conf_option="plus_time",
+            ),
+        )
+        self.over_time_plus_color_button.grid(
+            row=3, column=8, columnspan=2, sticky="n", padx=5, pady=5
+        )
+
+        self.c_logger.info("Overtime settings GUI section generation was successful.")
 
     def set_date_format_picker_value(self, variable=None, conf_section=None, conf_option=None):
         """
@@ -442,10 +507,10 @@ class GraphSettings(GraphSettingsDataStorage):
         self.c_logger.info("Starting to generate the Save and Cancel buttons.")
 
         save_button = tk.Button(self.main_window, text="Save", command=self.update_config_file,)
-        save_button.grid(row=7, column=0, columnspan=7, sticky="n", padx=5, pady=5)
+        save_button.grid(row=7, column=0, columnspan=9, sticky="n", padx=5, pady=5)
 
         cancel_button = tk.Button(self.main_window, text="Cancel", command=self._quit_top_level,)
-        cancel_button.grid(row=8, column=0, columnspan=7, sticky="n", padx=5, pady=5)
+        cancel_button.grid(row=8, column=0, columnspan=9, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("The 'Save' and 'Cancel' button has been generated successfully.")
 
