@@ -87,6 +87,9 @@ class GraphSettingsDataStorage(object):
             "AXIS", "overtime_x_axis_label"
         )
 
+        # Helper variables
+        self.entry_tk_vars = []
+
 
 class GraphSettings(GraphSettingsDataStorage):
     """
@@ -119,6 +122,7 @@ class GraphSettings(GraphSettingsDataStorage):
         self._create_annotations_gui_section()
         self._create_date_gui_section()
         self._create_overtime_gui_section()
+        self._create_axis_gui_section()
         self.save_and_cancel_button_gui()
 
         self.__create_horizontal_separator_lines()
@@ -154,6 +158,10 @@ class GraphSettings(GraphSettingsDataStorage):
             row=0, column=7, rowspan=6, sticky="ns"
         )
 
+        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
+            row=0, column=10, rowspan=6, sticky="ns"
+        )
+
     def __create_horizontal_separator_lines(self):
         """
         This method creates the horizontal separator lines.
@@ -161,7 +169,7 @@ class GraphSettings(GraphSettingsDataStorage):
         """
 
         ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=6, column=0, columnspan=10, sticky="we"
+            row=6, column=0, columnspan=13, sticky="we"
         )
 
     def _create_colors_gui_section(self):
@@ -379,6 +387,58 @@ class GraphSettings(GraphSettingsDataStorage):
 
         self.c_logger.info("Date settings GUI section generation was successful.")
 
+    def _create_axis_gui_section(self):
+        """
+        Creating the Axises related gui section.
+            [AXIS]
+            x_axis_start = 05:00
+            x_axis_stop = 21:00
+            x_axis_label = Times
+            y_axis_label = Dates
+            overtime_y_axis_label = Times
+            overtime_x_axis_label = Overtime
+        :return: None
+        """
+
+        self.c_logger.info("Starting to create the axis setting GUI section.")
+
+        axes_config_label = ttk.Label(
+            self.main_window, text="Graph Axes", font=("Helvetica", 16, "bold")
+        )
+        axes_config_label.grid(row=0, column=11, columnspan=2, sticky="s")
+
+        x_axis_start_label = tk.Label(self.main_window, text="X axis start")
+        x_axis_start_label.grid(row=1, column=11, sticky="e")
+        x_axis_start_var = tk.StringVar()
+        x_axis_start_var.set(self.x_axis_start)
+        self.entry_tk_vars.append([x_axis_start_var, "AXIS", "x_axis_start"])
+        x_axis_start_entry = tk.Entry(self.main_window, bd=5, textvariable=x_axis_start_var)
+        x_axis_start_entry.grid(row=1, column=12, sticky="w")
+
+        x_axis_stop_label = tk.Label(self.main_window, text="X axis stop")
+        x_axis_stop_label.grid(row=2, column=11, sticky="e")
+        x_axis_stop_var = tk.StringVar()
+        x_axis_stop_var.set(self.x_axis_stop)
+        self.entry_tk_vars.append([x_axis_stop_var, "AXIS", "x_axis_stop"])
+        x_axis_stop_entry = tk.Entry(self.main_window, bd=5, textvariable=x_axis_stop_var)
+        x_axis_stop_entry.grid(row=2, column=12, sticky="w")
+
+        x_axis_label_label = tk.Label(self.main_window, text="X axis label")
+        x_axis_label_label.grid(row=3, column=11, sticky="e")
+        x_axis_label_var = tk.StringVar()
+        x_axis_label_var.set(self.x_axis_label)
+        self.entry_tk_vars.append([x_axis_label_var, "AXIS", "x_axis_label"])
+        x_axis_label_entry = tk.Entry(self.main_window, bd=5, textvariable=x_axis_label_var)
+        x_axis_label_entry.grid(row=3, column=12, sticky="w")
+
+        y_axis_label_label = tk.Label(self.main_window, text="Y axis label")
+        y_axis_label_label.grid(row=4, column=11, sticky="e")
+        y_axis_label_var = tk.StringVar()
+        y_axis_label_var.set(self.y_axis_label)
+        self.entry_tk_vars.append([y_axis_label_var, "AXIS", "y_axis_label"])
+        y_axis_label_entry = tk.Entry(self.main_window, bd=5, textvariable=y_axis_label_var)
+        y_axis_label_entry.grid(row=4, column=12, sticky="w")
+
     def _create_overtime_gui_section(self):
         """
         Creating the Overtime related gui section.
@@ -404,7 +464,7 @@ class GraphSettings(GraphSettingsDataStorage):
                 conf_option="visible",
             ),
         )
-        over_time_graph_visible_checkbox.grid(row=1, column=8)
+        over_time_graph_visible_checkbox.grid(row=1, column=8, columnspan=2)
 
         self.over_time_minus_color_button = tk.Button(
             self.main_window,
@@ -438,7 +498,42 @@ class GraphSettings(GraphSettingsDataStorage):
             row=3, column=8, columnspan=2, sticky="n", padx=5, pady=5
         )
 
+        x_axis_label_label = tk.Label(self.main_window, text="X axis label")
+        x_axis_label_label.grid(row=4, column=8, sticky="e")
+        x_axis_label_var = tk.StringVar()
+        x_axis_label_var.set(self.overtime_x_axis_label)
+        self.entry_tk_vars.append([x_axis_label_var, "AXIS", "overtime_x_axis_label"])
+        x_axis_label_entry = tk.Entry(self.main_window, bd=5, textvariable=x_axis_label_var)
+        x_axis_label_entry.grid(row=4, column=9, sticky="w")
+
+        y_axis_label_label = tk.Label(self.main_window, text="Y axis label")
+        y_axis_label_label.grid(row=5, column=8, sticky="e")
+        y_axis_label_var = tk.StringVar()
+        y_axis_label_var.set(self.overtime_y_axis_label)
+        self.entry_tk_vars.append([y_axis_label_var, "AXIS", "overtime_y_axis_label"])
+        y_axis_label_entry = tk.Entry(self.main_window, bd=5, textvariable=y_axis_label_var)
+        y_axis_label_entry.grid(row=5, column=9, sticky="w")
+
         self.c_logger.info("Overtime settings GUI section generation was successful.")
+
+    def _update_entry_tk_vars(self):
+        """
+        Update the textvariables of tk.Entry fields.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to update the textvariables of tk.Entry widgets")
+
+        for single_var in self.entry_tk_vars:
+            value_of_tk_var = single_var[0].get()
+            if value_of_tk_var != self.graph_settings_config_parser.get(
+                single_var[1], single_var[2]
+            ):
+                self.graph_settings_config_parser.set(
+                    single_var[1], single_var[2], value_of_tk_var,
+                )
+
+        self.c_logger.info("textvariables of tk.Entry widgets have been updated successfully")
 
     def set_date_format_picker_value(self, variable=None, conf_section=None, conf_option=None):
         """
@@ -463,6 +558,34 @@ class GraphSettings(GraphSettingsDataStorage):
             #  https://stackoverflow.com/questions/14340366/configparser-and-string-with
             self.graph_settings_config_parser.set(
                 conf_section, conf_option, variable.get(),
+            )
+            return
+        self.c_logger.warning(
+            "The section of option parameter hasn't got. "
+            "The config file won't be updated with the new value."
+        )
+
+    def set_entry_value(self, variable, conf_section=None, conf_option=None):
+        """
+        This is a callback of tk.Entry.
+        If a checkbutton changes this callback updates the configparser object.
+        :param variable: The reference of the related variable.
+        :param conf_section: Related section in the config file.
+        :param conf_option: Related options in the config file.
+        :return: None
+        """
+
+        self.c_logger.info("Update the checkbutton variable in config file.")
+        self.c_logger.debug(
+            "Getting values: Variable: {} ; Section: {} ; Option: {}".format(
+                variable, conf_section, conf_option
+            )
+        )
+        self.c_logger.debug("Variable value: {}".format(variable.get()))
+
+        if conf_section and conf_option:
+            self.graph_settings_config_parser.set(
+                conf_section, conf_option, "True" if variable.get() else "False"
             )
             return
         self.c_logger.warning(
@@ -507,10 +630,10 @@ class GraphSettings(GraphSettingsDataStorage):
         self.c_logger.info("Starting to generate the Save and Cancel buttons.")
 
         save_button = tk.Button(self.main_window, text="Save", command=self.update_config_file,)
-        save_button.grid(row=7, column=0, columnspan=9, sticky="n", padx=5, pady=5)
+        save_button.grid(row=7, column=0, columnspan=13, sticky="n", padx=5, pady=5)
 
         cancel_button = tk.Button(self.main_window, text="Cancel", command=self._quit_top_level,)
-        cancel_button.grid(row=8, column=0, columnspan=9, sticky="n", padx=5, pady=5)
+        cancel_button.grid(row=8, column=0, columnspan=13, sticky="n", padx=5, pady=5)
 
         self.c_logger.info("The 'Save' and 'Cancel' button has been generated successfully.")
 
@@ -521,6 +644,8 @@ class GraphSettings(GraphSettingsDataStorage):
         """
 
         self.c_logger.info("Starting to update the config file with the new values.")
+
+        self._update_entry_tk_vars()
 
         with open(self.graph_settings_file_path, "w") as configfile:
             self.graph_settings_config_parser.write(configfile)

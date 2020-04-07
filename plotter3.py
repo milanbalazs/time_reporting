@@ -507,9 +507,10 @@ class Plotter3(object):
         plus_minus__time_axis.set_ylim(min(y_ticks), max(y_ticks))
         plus_minus__time_axis.set_xlim(0, 0)
         self.c_logger.info("Set X label to 'Times'")
-        plus_minus__time_axis.set_xlabel("Overtime")
+        plus_minus__time_axis.set_xlabel(self.graph_settings.get("AXIS", "overtime_x_axis_label"))
         self.c_logger.info("Set Y label to 'Dates'")
-        plus_minus__time_axis.set_ylabel("Time")
+
+        plus_minus__time_axis.set_ylabel(self.graph_settings.get("AXIS", "overtime_y_axis_label"))
 
         self.c_logger.info("Set Y ticks")
         plus_minus__time_axis.set_yticks(y_ticks)
@@ -659,9 +660,9 @@ class Plotter3(object):
         working_time_axis.set_xlim(min(self.x_axis_ticks), self.x_axis_limit)
 
         self.c_logger.info("Set X label to 'Times'")
-        working_time_axis.set_xlabel("Times")
+        working_time_axis.set_xlabel(self.graph_settings.get("AXIS", "x_axis_label"))
         self.c_logger.info("Set Y label to 'Dates'")
-        working_time_axis.set_ylabel("Dates")
+        working_time_axis.set_ylabel(self.graph_settings.get("AXIS", "y_axis_label"))
 
         self.c_logger.info("Set Y ticks")
         working_time_axis.set_yticks(self.y_axis_ticks)
