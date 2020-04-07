@@ -686,8 +686,13 @@ class GraphSettings(GraphSettingsDataStorage):
             )
         )
 
+        self.main_window.attributes("-topmost", 0)
+
         color = colorchooser.askcolor(color=color)
         color_name = color[1]
+
+        self.main_window.attributes("-topmost", 1)
+
         self.c_logger.info("Selected color: {}".format(color_name))
         if set_var:
             self.__setattr__(set_var, color_name)

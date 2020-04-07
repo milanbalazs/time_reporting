@@ -69,13 +69,26 @@ class Plotter3(object):
         self.c_logger.debug("X axis config data:\n{}".format(self.x_axis_config_data))
         self.c_logger.info("X axis config data has been successfully got.")
 
+        x_axis_start_val = self.x_axis_config_data[self.graph_settings.get("AXIS", "x_axis_start")]
+        x_axis_start_val = (
+            x_axis_start_val
+            if x_axis_start_val % 50 == 0
+            else x_axis_start_val - (x_axis_start_val % 50)
+        )
+        x_axis_stop_val = self.x_axis_config_data[self.graph_settings.get("AXIS", "x_axis_stop")]
+        x_axis_stop_val = (
+            x_axis_stop_val
+            if x_axis_stop_val % 50 == 0
+            else x_axis_stop_val + 50 - x_axis_stop_val % 50
+        )
+
         self.c_logger.info("Starting to calculate X axis tick labels.")
         # Example of generated X axis tick labels:
         # ['05:00', '06:40', '08:20', '10:00', '11:40', '13:20', '15:00', '16:40', '18:20', '20:00']
         self.x_axis_tick_labels = [
             x
             for idx, x in enumerate(self.x_axis_config_data.keys())
-            if idx % 100 == 0 and idx > 240
+            if x_axis_start_val <= idx <= x_axis_stop_val and idx % 50 == 0
         ]
         self.c_logger.debug("X axis tick labels:\n{}".format(self.x_axis_tick_labels))
         self.c_logger.info("X axis tick labels has been successfully calculated.")
@@ -86,12 +99,18 @@ class Plotter3(object):
         self.x_axis_ticks = [
             idx
             for idx, x in enumerate(self.x_axis_config_data.keys())
-            if idx % 100 == 0 and idx > 240
+            if x_axis_start_val <= idx <= x_axis_stop_val and idx % 50 == 0
         ]
         self.c_logger.debug("X axis ticks:\n{}".format(self.x_axis_ticks))
         self.c_logger.info("X axis ticks has been successfully calculated.")
 
-        self.x_axis_limit = len(self.x_axis_config_data.keys())
+        self.x_axis_limit = len(
+            [
+                x
+                for idx, x in enumerate(self.x_axis_config_data.keys())
+                if x_axis_start_val <= idx <= x_axis_stop_val
+            ]
+        )
         self.c_logger.info("X axis limit: {}".format(self.x_axis_limit))
 
         self.c_logger.info("Starting to calculate Y axis ticks.")
@@ -157,7 +176,10 @@ class Plotter3(object):
             )
             # If the config file doesn't exist, the generator creates one.
             # It comes from helper_functions module.
-            x_axis_data_generator()
+            x_axis_data_generator(
+                self.graph_settings.get("AXIS", "x_axis_start"),
+                self.graph_settings.get("AXIS", "x_axis_stop"),
+            )
             self.c_logger.info("X axis data config generator method has been successfully called.")
         self.c_logger.info("Starting to open the '{}' config file.".format(X_AXIS_CONFIG_FILE_PATH))
         with open(X_AXIS_CONFIG_FILE_PATH, "r") as opened_json:
@@ -672,7 +694,7 @@ class Plotter3(object):
         self.c_logger.info("Set X ticks")
         working_time_axis.set_xticks(self.x_axis_ticks)
         self.c_logger.info("Set X tick labels")
-        working_time_axis.set_xticklabels(self.x_axis_tick_labels)
+        working_time_axis.set_xticklabels(self.x_axis_tick_labels, rotation=70)
 
         self.c_logger.info("Set grid of figure")
         working_time_axis.grid(True, linestyle=":")
