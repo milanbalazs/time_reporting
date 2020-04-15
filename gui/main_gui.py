@@ -24,6 +24,7 @@ sys.path.append(os.path.join(PATH_OF_FILE_DIR, "tabs"))
 # Import tabs
 import main_tab as main_tab_module  # noqa: E402
 import report_tab as report_tab_module  # noqa: E402
+import user_tab as user_tab_module  # noqa: E402
 
 # Import own modules.
 from color_logger import ColoredLogger  # noqa: E402
@@ -39,6 +40,11 @@ TEST_GRAPH_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "graph_con
 USER_GRAPH_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "graph_config.ini")
 DEFAULT_GRAPH_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "graph_config_default.ini")
 GRAPH_CONFIG_FILE = None
+
+# Set user config paths
+TEST_USER_INFO_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "user_info_test.ini")
+USER_USER_INFO_CONFIG_FILE = os.path.join(PATH_OF_FILE_DIR, "..", "conf", "user_info.ini")
+USER_INFO_CONFIG_FILE = None
 
 
 def set_up_graph_settings_config_parser(c_logger, config_file=None):
@@ -65,6 +71,30 @@ def set_up_graph_settings_config_parser(c_logger, config_file=None):
     return graph_settings_config
 
 
+def set_up_user_info_config_parser(c_logger, config_file=None):
+    """
+    This method creates the user info parser.
+    :param c_logger: Instance of a common logger.
+    :param config_file: Path of the related config file.
+    :return: configparser object.
+    """
+
+    global USER_INFO_CONFIG_FILE
+
+    c_logger.info("Starting to set-up the user config settings config parser.")
+
+    if not config_file:
+        config_file = USER_GRAPH_CONFIG_FILE
+
+    # Set the used config file!
+    USER_INFO_CONFIG_FILE = config_file
+
+    user_info_config = configparser.ConfigParser()
+    user_info_config.read(config_file)
+
+    return user_info_config
+
+
 def quit_from_app(main_window):
     """
     Quit from application.
@@ -86,9 +116,13 @@ def main(c_logger=None):
         graph_config_parser = set_up_graph_settings_config_parser(
             c_logger=c_logger, config_file=TEST_GRAPH_CONFIG_FILE
         )
+        user_info_parser = set_up_user_info_config_parser(
+            c_logger=c_logger, config_file=TEST_USER_INFO_CONFIG_FILE
+        )
     else:
         data_processor_instance = DataProcessor(c_logger=c_logger)
         graph_config_parser = set_up_graph_settings_config_parser(c_logger=c_logger)
+        user_info_parser = set_up_user_info_config_parser(c_logger=c_logger)
 
     window = tk.Tk()
     window.iconphoto(False, tk.PhotoImage(file=PATH_OF_WINDOW_ICON))
@@ -141,6 +175,10 @@ def main(c_logger=None):
 
     report_tab_module.ReportConfigTab(
         report_config_tab, c_logger=c_logger, data_processor=data_processor_instance
+    )
+
+    user_tab_module.UserConfigTab(
+        user_config_tab, c_logger=c_logger, user_info_parser=user_info_parser
     )
 
     window.protocol("WM_DELETE_WINDOW", lambda: quit_from_app(window))

@@ -41,7 +41,6 @@ from file_type_picker import FileTypePicker
 
 class ReportConfigTab(object):
     """
-    TODO: Fill this class with content.
     This tab contains all report configuration related attributes.
     Planned options:
         - Date range
@@ -77,6 +76,8 @@ class ReportConfigTab(object):
         self.__create_personal_gui_section()
         self.__create_horizontal_separator_lines()
         self.__create_vertical_separator_lines()
+
+        self.__set_resizable(row=9, col=2)
 
     def __set_default_report_dir(self):
         """
@@ -321,8 +322,6 @@ class ReportConfigTab(object):
         report_generation_start_button.grid(
             row=9, column=0, columnspan=3, sticky="n", padx=5, pady=5
         )
-
-        self.__set_resizable(row=9, col=2)
 
         self.c_logger.info("The report generation GUI has been rendered successfully.")
 
