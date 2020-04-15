@@ -60,7 +60,7 @@ class UserConfigTab(object):
 
         self.__generate_complete_gui()
 
-        self.__set_resizable(6, 1)
+        self.__set_resizable(9, 1)
 
     def __generate_complete_gui(self):
         """
@@ -69,6 +69,7 @@ class UserConfigTab(object):
         """
 
         self.__create_basic_user_info_gui_section()
+        self.__create_horizontal_separator_lines()
 
     @staticmethod
     def __set_up_default_logger():
@@ -104,6 +105,20 @@ class UserConfigTab(object):
             self.main_window.grid_columnconfigure(x, weight=1)
         self.c_logger.info("Successfully set the resizable rows and columns.")
 
+    def __create_horizontal_separator_lines(self):
+        """
+        This method creates the horizontal separator lines.
+        :return: None
+        """
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=1, column=0, columnspan=2, sticky="we"
+        )
+
+        ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
+            row=8, column=0, columnspan=2, sticky="we"
+        )
+
     def __create_basic_user_info_gui_section(self):
         """
         Creating the basic user info GUI section.
@@ -118,52 +133,52 @@ class UserConfigTab(object):
         user_config_basic_label.grid(row=0, column=0, columnspan=2, sticky="s")
 
         user_name_label = ttk.Label(self.main_window, text="Name")
-        user_name_label.grid(row=1, column=0, sticky="e", padx=5, pady=5)
+        user_name_label.grid(row=2, column=0, sticky="e", padx=5, pady=5)
 
         # Get the entry content:
         # print(self.user_name_entry.get())
         self.user_name_entry = ttk.Entry(self.main_window, width=80)
-        self.user_name_entry.grid(row=1, column=1, sticky="w", padx=5, pady=5)
+        self.user_name_entry.grid(row=2, column=1, sticky="w", padx=5, pady=5)
         self.user_name_entry.insert(0, self.user_info_parser.get("BASIC_USER_INFO", "name"))
 
         user_id_label = ttk.Label(self.main_window, text="User ID")
-        user_id_label.grid(row=2, column=0, sticky="e", padx=5, pady=5)
+        user_id_label.grid(row=3, column=0, sticky="e", padx=5, pady=5)
 
         self.user_id_name_entry = ttk.Entry(self.main_window, width=80)
         self.user_id_name_entry.insert(0, self.user_info_parser.get("BASIC_USER_INFO", "user_id"))
-        self.user_id_name_entry.grid(row=2, column=1, sticky="w", padx=5, pady=5)
+        self.user_id_name_entry.grid(row=3, column=1, sticky="w", padx=5, pady=5)
 
         user_birth_label = ttk.Label(self.main_window, text="Birth date")
-        user_birth_label.grid(row=3, column=0, sticky="e", padx=5, pady=5)
+        user_birth_label.grid(row=4, column=0, sticky="e", padx=5, pady=5)
 
         self.user_birth_name_entry = ttk.Entry(self.main_window, width=80)
         self.user_birth_name_entry.insert(
             0, self.user_info_parser.get("BASIC_USER_INFO", "birth_date")
         )
-        self.user_birth_name_entry.grid(row=3, column=1, sticky="w", padx=5, pady=5)
+        self.user_birth_name_entry.grid(row=4, column=1, sticky="w", padx=5, pady=5)
 
         user_department_label = ttk.Label(self.main_window, text="Department")
-        user_department_label.grid(row=4, column=0, sticky="e", padx=5, pady=5)
+        user_department_label.grid(row=5, column=0, sticky="e", padx=5, pady=5)
 
         self.user_department_entry = ttk.Entry(self.main_window, width=80)
         self.user_department_entry.insert(
             0, self.user_info_parser.get("BASIC_USER_INFO", "department")
         )
-        self.user_department_entry.grid(row=4, column=1, sticky="w", padx=5, pady=5)
+        self.user_department_entry.grid(row=5, column=1, sticky="w", padx=5, pady=5)
 
         user_position_label = ttk.Label(self.main_window, text="Position")
-        user_position_label.grid(row=5, column=0, sticky="e", padx=5, pady=5)
+        user_position_label.grid(row=6, column=0, sticky="e", padx=5, pady=5)
 
         self.user_position_entry = ttk.Entry(self.main_window, width=80)
         self.user_position_entry.insert(0, self.user_info_parser.get("BASIC_USER_INFO", "position"))
-        self.user_position_entry.grid(row=5, column=1, sticky="w", padx=5, pady=5)
+        self.user_position_entry.grid(row=6, column=1, sticky="w", padx=5, pady=5)
 
         user_sap_label = ttk.Label(self.main_window, text="SAP ID")
-        user_sap_label.grid(row=6, column=0, sticky="e", padx=5, pady=5)
+        user_sap_label.grid(row=7, column=0, sticky="e", padx=5, pady=5)
 
         self.user_sap_entry = ttk.Entry(self.main_window, width=80)
         self.user_sap_entry.insert(0, self.user_info_parser.get("BASIC_USER_INFO", "sap_id"))
-        self.user_sap_entry.grid(row=6, column=1, sticky="w", padx=5, pady=5)
+        self.user_sap_entry.grid(row=7, column=1, sticky="w", padx=5, pady=5)
 
         user_info_save_button = tk.Button(
             self.main_window,
@@ -174,7 +189,7 @@ class UserConfigTab(object):
             font="Helvetica 14 bold",
             command=lambda: self.__user_info_save_callback(),
         )
-        user_info_save_button.grid(row=7, column=0, columnspan=2, sticky="s", padx=5, pady=5)
+        user_info_save_button.grid(row=9, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
     def __user_info_save_callback(self):
         """
