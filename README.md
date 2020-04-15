@@ -13,6 +13,10 @@
 
 ![Report window example](imgs/report_window_example.png)
 
+## User config tab:
+
+![User window example](imgs/user_window_example.png)
+
 ## Graph settings:
 
 ![Report window example](imgs/graph_config_example.png)
