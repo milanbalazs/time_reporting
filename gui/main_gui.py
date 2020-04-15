@@ -178,7 +178,10 @@ def main(c_logger=None):
     )
 
     user_tab_module.UserConfigTab(
-        user_config_tab, c_logger=c_logger, user_info_parser=user_info_parser
+        user_config_tab,
+        c_logger=c_logger,
+        user_info_parser=user_info_parser,
+        user_info_config_file_path=USER_INFO_CONFIG_FILE,
     )
 
     window.protocol("WM_DELETE_WINDOW", lambda: quit_from_app(window))

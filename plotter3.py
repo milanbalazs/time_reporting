@@ -648,6 +648,7 @@ class Plotter3(object):
                             self.graph_settings.get("COLORS", "break_time"),
                             self.graph_settings.get("COLORS", "minus_time"),
                         ),
+                        alpha=50,
                         hatch="",
                     )
                     self.create_annotate(working_time_axis, y_place, single_dict)
@@ -671,6 +672,7 @@ class Plotter3(object):
                         self.graph_settings.get("COLORS", "break_time"),
                         self.graph_settings.get("COLORS", "plus_time"),
                     ),
+                    alpha=50,
                     hatch="",
                 )
                 self.create_annotate(working_time_axis, y_place, single_dict)
