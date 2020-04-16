@@ -146,10 +146,12 @@ def main(c_logger=None):
     main_tab = tk.Frame(note)
     report_config_tab = tk.Frame(note)
     user_config_tab = tk.Frame(note)
+    metrics_config_tab = tk.Frame(note)
 
     note.add(main_tab, text="Main")
     note.add(report_config_tab, text="Report")
     note.add(user_config_tab, text="User Config")
+    note.add(metrics_config_tab, text="Metrics")
 
     note.pack(expand=True, fill=tk.BOTH)
 
