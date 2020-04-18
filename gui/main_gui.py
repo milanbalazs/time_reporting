@@ -188,9 +188,7 @@ def main(c_logger=None):
     )
 
     metrics_tab_module.MetricsTab(
-        metrics_tab,
-        c_logger=c_logger,
-        data_processor=data_processor_instance,
+        metrics_tab, c_logger=c_logger, data_processor=data_processor_instance,
     )
 
     window.protocol("WM_DELETE_WINDOW", lambda: quit_from_app(window))
