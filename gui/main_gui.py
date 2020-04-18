@@ -25,6 +25,7 @@ sys.path.append(os.path.join(PATH_OF_FILE_DIR, "tabs"))
 import main_tab as main_tab_module  # noqa: E402
 import report_tab as report_tab_module  # noqa: E402
 import user_tab as user_tab_module  # noqa: E402
+import metrics_tab as metrics_tab_module  # noqa: E402
 
 # Import own modules.
 from color_logger import ColoredLogger  # noqa: E402
@@ -146,12 +147,12 @@ def main(c_logger=None):
     main_tab = tk.Frame(note)
     report_config_tab = tk.Frame(note)
     user_config_tab = tk.Frame(note)
-    metrics_config_tab = tk.Frame(note)
+    metrics_tab = tk.Frame(note)
 
     note.add(main_tab, text="Main")
     note.add(report_config_tab, text="Report")
     note.add(user_config_tab, text="User Config")
-    note.add(metrics_config_tab, text="Metrics")
+    note.add(metrics_tab, text="Metrics")
 
     note.pack(expand=True, fill=tk.BOTH)
 
@@ -184,6 +185,12 @@ def main(c_logger=None):
         c_logger=c_logger,
         user_info_parser=user_info_parser,
         user_info_config_file_path=USER_INFO_CONFIG_FILE,
+    )
+
+    metrics_tab_module.MetricsTab(
+        metrics_tab,
+        c_logger=c_logger,
+        data_processor=data_processor_instance,
     )
 
     window.protocol("WM_DELETE_WINDOW", lambda: quit_from_app(window))

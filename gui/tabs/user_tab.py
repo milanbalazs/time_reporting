@@ -31,7 +31,6 @@ from color_logger import ColoredLogger
 
 class UserConfigTab(object):
     """
-    TODO: Fill this class with content.
     This tab contains all User configuration options.
     Planned options:
         - Name
@@ -60,8 +59,6 @@ class UserConfigTab(object):
 
         self.__generate_complete_gui()
 
-        self.__set_resizable(9, 1)
-
     def __generate_complete_gui(self):
         """
         Generating the complete User info related GUI parts.
@@ -70,6 +67,7 @@ class UserConfigTab(object):
 
         self.__create_basic_user_info_gui_section()
         self.__create_horizontal_separator_lines()
+        self.__set_resizable(9, 1)
 
     @staticmethod
     def __set_up_default_logger():
