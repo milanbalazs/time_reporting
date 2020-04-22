@@ -77,7 +77,7 @@ class ReportConfigTab(object):
         self.__create_horizontal_separator_lines()
         self.__create_vertical_separator_lines()
 
-        self.__set_resizable(row=9, col=2)
+        self.__set_resizable(row=9, col=3)
 
     def __set_default_report_dir(self):
         """
@@ -257,7 +257,7 @@ class ReportConfigTab(object):
         # Get the entry content:
         # print(self.report_generation_file_name_entry.get())
         self.report_generation_file_name_entry = ttk.Entry(self.main_window, width=80)
-        self.report_generation_file_name_entry.grid(row=6, column=1, sticky="w", padx=5, pady=5)
+        self.report_generation_file_name_entry.grid(row=6, column=1, sticky="we", padx=5, pady=5)
 
         self.c_logger.info("Generation the main GUI section of report tab was successful.")
 
@@ -292,7 +292,7 @@ class ReportConfigTab(object):
             self.main_window, textvariable=self.directory_entry_text, width=80
         )
         self.report_generation_file_directory_entry.grid(
-            row=7, column=1, sticky="w", padx=5, pady=5
+            row=7, column=1, sticky="we", padx=5, pady=5
         )
 
         def __browse_button():
