@@ -85,10 +85,12 @@ def set_up_user_info_config_parser(c_logger, config_file=None):
     c_logger.info("Starting to set-up the user config settings config parser.")
 
     if not config_file:
-        config_file = USER_GRAPH_CONFIG_FILE
+        config_file = USER_USER_INFO_CONFIG_FILE
 
     # Set the used config file!
     USER_INFO_CONFIG_FILE = config_file
+
+    c_logger.debug("Used user config file: {}".format(config_file))
 
     user_info_config = configparser.ConfigParser()
     user_info_config.read(config_file)

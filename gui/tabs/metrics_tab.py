@@ -36,6 +36,8 @@ from data_processor import DataProcessor
 from color_logger import ColoredLogger
 from date_entry import MyDateEntry
 
+LABEL_FONT = "Helvetica 14 bold"
+
 
 class MetricsGetters(object):
     """
@@ -94,10 +96,9 @@ class MetricsTab(MetricsGetters):
         self.__create_date_selector_metrics_gui_section()
         self.__create_calculated_metrics_gui_section()
 
-        self.__create_vertical_separator_lines()
         self.__create_horizontal_separator_lines()
 
-        self.__set_resizable(11, 3)
+        self.__set_resizable(16, 1)
 
     @staticmethod
     def __set_up_default_logger():
@@ -113,16 +114,6 @@ class MetricsTab(MetricsGetters):
 
         return return_logger
 
-    def __create_vertical_separator_lines(self):
-        """
-        This method creates the vertical separator lines.
-        :return: None
-        """
-
-        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
-            row=1, column=2, rowspan=11, sticky="ns"
-        )
-
     def __create_horizontal_separator_lines(self):
         """
         This method creates the horizontal separator lines.
@@ -134,7 +125,7 @@ class MetricsTab(MetricsGetters):
         )
 
         ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
-            row=4, column=0, columnspan=2, sticky="we"
+            row=6, column=0, columnspan=4, sticky="we"
         )
 
     def __set_resizable(self, row, col):
@@ -165,7 +156,7 @@ class MetricsTab(MetricsGetters):
         self.c_logger.info("Starting to generate the date selector GUI section of Metrics tab.")
 
         metrics_label = ttk.Label(self.main_window, text="Metrics", font=("Helvetica", 16, "bold"))
-        metrics_label.grid(row=0, column=0, columnspan=4, sticky="s")
+        metrics_label.grid(row=0, column=0, columnspan=2, sticky="s")
 
         metrics_date_selector_from_date = ttk.Label(self.main_window, text="From")
         metrics_date_selector_from_date.grid(row=2, column=0, sticky="e", padx=5, pady=5)
@@ -191,7 +182,11 @@ class MetricsTab(MetricsGetters):
 
         metrics_start_button = tk.Button(
             self.main_window,
+            width=20,
+            height=1,
+            borderwidth=3,
             text="Start",
+            font=LABEL_FONT,
             command=lambda: self.__create_calculated_metrics_gui_section(),
         )
         metrics_start_button.grid(row=5, column=0, columnspan=2, sticky="n", padx=5, pady=5)
@@ -206,43 +201,59 @@ class MetricsTab(MetricsGetters):
             "Starting to generate the calculated metrics GUI section of Metrics tab."
         )
 
-        week_days_label = ttk.Label(self.main_window, text="Week days: {}".format("666"))
-        week_days_label.grid(row=2, column=3, sticky="w")
+        week_days_label = ttk.Label(
+            self.main_window, text="Week days: {}".format("666"), font=LABEL_FONT
+        )
+        week_days_label.grid(row=7, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
-        weekend_days_label = ttk.Label(self.main_window, text="Weekend days: {}".format("666"))
-        weekend_days_label.grid(row=3, column=3, sticky="w")
+        weekend_days_label = ttk.Label(
+            self.main_window, text="Weekend days: {}".format("666"), font=LABEL_FONT
+        )
+        weekend_days_label.grid(row=8, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
-        worked_days_label = ttk.Label(self.main_window, text="Worked days: {}".format("666"))
-        worked_days_label.grid(row=4, column=3, sticky="w")
+        worked_days_label = ttk.Label(
+            self.main_window, text="Worked days: {}".format("666"), font=LABEL_FONT
+        )
+        worked_days_label.grid(row=9, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
-        missing_days_label = ttk.Label(self.main_window, text="Missing days: {}".format("666"))
-        missing_days_label.grid(row=5, column=3, sticky="w")
+        missing_days_label = ttk.Label(
+            self.main_window, text="Missing days: {}".format("666"), font=LABEL_FONT
+        )
+        missing_days_label.grid(row=10, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         required_working_hours_label = ttk.Label(
-            self.main_window, text="Required working hours: {}".format("666")
+            self.main_window, text="Required working hours: {}".format("666"), font=LABEL_FONT
         )
-        required_working_hours_label.grid(row=6, column=3, sticky="w")
+        required_working_hours_label.grid(
+            row=11, column=0, sticky="n", columnspan=2, padx=5, pady=5
+        )
 
-        working_hours_label = ttk.Label(self.main_window, text="Worked hours: {}".format("666"))
-        working_hours_label.grid(row=7, column=3, sticky="w")
+        working_hours_label = ttk.Label(
+            self.main_window, text="Worked hours: {}".format("666"), font=LABEL_FONT
+        )
+        working_hours_label.grid(row=12, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
-        breaking_hours_label = ttk.Label(self.main_window, text="Break hours: {}".format("666"))
-        breaking_hours_label.grid(row=8, column=3, sticky="w")
+        breaking_hours_label = ttk.Label(
+            self.main_window, text="Break hours: {}".format("666"), font=LABEL_FONT
+        )
+        breaking_hours_label.grid(row=13, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_minus_hours_label = ttk.Label(
-            self.main_window, text="Overtime minus: {}".format("666")
+            self.main_window, text="Overtime minus: {}".format("666"), font=LABEL_FONT
         )
-        overtime_minus_hours_label.grid(row=9, column=3, sticky="w")
+        overtime_minus_hours_label.grid(row=14, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_plus_hours_label = ttk.Label(
-            self.main_window, text="Overtime plus: {}".format("666")
+            self.main_window, text="Overtime plus: {}".format("666"), font=LABEL_FONT
         )
-        overtime_plus_hours_label.grid(row=10, column=3, sticky="w")
+        overtime_plus_hours_label.grid(row=15, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_overall_hours_label = ttk.Label(
-            self.main_window, text="Overtime overall: {}".format("666")
+            self.main_window, text="Overtime overall: {}".format("666"), font=LABEL_FONT
         )
-        overtime_overall_hours_label.grid(row=11, column=3, sticky="w")
+        overtime_overall_hours_label.grid(
+            row=16, column=0, sticky="n", columnspan=2, padx=5, pady=5
+        )
 
     def __set_calendar(self, set_date=None):
         """
