@@ -37,6 +37,7 @@ from color_logger import ColoredLogger
 from date_entry import MyDateEntry
 
 LABEL_FONT = "Helvetica 14 bold"
+FMT = "%H:%M"
 
 
 class MetricsGetters(object):
@@ -202,58 +203,273 @@ class MetricsTab(MetricsGetters):
         )
 
         week_days_label = ttk.Label(
-            self.main_window, text="Week days: {}".format("666"), font=LABEL_FONT
+            self.main_window, text="All days: {}".format(self.get_all_days()), font=LABEL_FONT
         )
         week_days_label.grid(row=7, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
-        weekend_days_label = ttk.Label(
-            self.main_window, text="Weekend days: {}".format("666"), font=LABEL_FONT
+        week_days_label = ttk.Label(
+            self.main_window,
+            text="Week days: {}".format(self.get_days(day_type="week")),
+            font=LABEL_FONT,
         )
-        weekend_days_label.grid(row=8, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        week_days_label.grid(row=8, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+
+        weekend_days_label = ttk.Label(
+            self.main_window,
+            text="Weekend days: {}".format(self.get_days(day_type="weekend")),
+            font=LABEL_FONT,
+        )
+        weekend_days_label.grid(row=9, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         worked_days_label = ttk.Label(
-            self.main_window, text="Worked days: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Worked days: {}".format(self.get_worked_or_missing_days(day_type="worked")),
+            font=LABEL_FONT,
         )
-        worked_days_label.grid(row=9, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        worked_days_label.grid(row=10, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         missing_days_label = ttk.Label(
-            self.main_window, text="Missing days: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Missing working days: {}".format(
+                self.get_worked_or_missing_days(day_type="missing")
+            ),
+            font=LABEL_FONT,
         )
-        missing_days_label.grid(row=10, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        missing_days_label.grid(row=11, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         required_working_hours_label = ttk.Label(
-            self.main_window, text="Required working hours: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Required working hours: {}".format(self.get_required_working_hours()),
+            font=LABEL_FONT,
         )
         required_working_hours_label.grid(
-            row=11, column=0, sticky="n", columnspan=2, padx=5, pady=5
+            row=12, column=0, sticky="n", columnspan=2, padx=5, pady=5
         )
 
         working_hours_label = ttk.Label(
-            self.main_window, text="Worked hours: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Worked hours: {}".format(self.get_user_times("worked")),
+            font=LABEL_FONT,
         )
-        working_hours_label.grid(row=12, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        working_hours_label.grid(row=13, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+
+        missing_working_hours_label = ttk.Label(
+            self.main_window,
+            text="Missing hours: {}".format(self.get_missing_working_hours()),
+            font=LABEL_FONT,
+        )
+        missing_working_hours_label.grid(row=14, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         breaking_hours_label = ttk.Label(
-            self.main_window, text="Break hours: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Break hours: {}".format(self.get_user_times("break")),
+            font=LABEL_FONT,
         )
-        breaking_hours_label.grid(row=13, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        breaking_hours_label.grid(row=15, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_minus_hours_label = ttk.Label(
             self.main_window, text="Overtime minus: {}".format("666"), font=LABEL_FONT
         )
-        overtime_minus_hours_label.grid(row=14, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        overtime_minus_hours_label.grid(row=16, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_plus_hours_label = ttk.Label(
             self.main_window, text="Overtime plus: {}".format("666"), font=LABEL_FONT
         )
-        overtime_plus_hours_label.grid(row=15, column=0, sticky="n", columnspan=2, padx=5, pady=5)
+        overtime_plus_hours_label.grid(row=17, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_overall_hours_label = ttk.Label(
             self.main_window, text="Overtime overall: {}".format("666"), font=LABEL_FONT
         )
         overtime_overall_hours_label.grid(
-            row=16, column=0, sticky="n", columnspan=2, padx=5, pady=5
+            row=18, column=0, sticky="n", columnspan=2, padx=5, pady=5
         )
+
+    def get_missing_working_hours(self):
+        """
+        This method provides the missing working hours.
+        :return: Missing working hours
+        """
+
+        self.c_logger.info("Starting to get the missing working hours in date range.")
+
+        required_hours = self.get_required_working_hours()
+        worked_hours = self.get_user_times("worked")
+
+        required_hours_second = (
+            int(required_hours.split(":")[0]) * 3600 + int(required_hours.split(":")[1]) * 60
+        )
+        worked_hours_second = (
+            int(worked_hours.split(":")[0]) * 3600 + int(worked_hours.split(":")[1]) * 60
+        )
+
+        missing_hours_in_second = required_hours_second - worked_hours_second
+
+        ellapsed_hours = int(divmod(missing_hours_in_second, 3600)[0])
+        ellapsed_mins = int(divmod(missing_hours_in_second, 60)[0]) - (ellapsed_hours * 60)
+        return "{:02d}:{:02d}".format(int(ellapsed_hours), int(ellapsed_mins))
+
+    def get_all_days(self):
+        """
+        This method provides the all days in the date range.
+        :return: Number of all days in the date range. INT
+        """
+
+        self.c_logger.info("Starting to get the all days in date range.")
+
+        from_date = self.metrics_date_selector_from_calendar_instance.get()
+        to_date = self.metrics_selector_to_calendar_instance.get()
+
+        date_range = self.data_processor.get_time_range(
+            from_date.replace(" ", ""), to_date.replace(" ", "")
+        )
+
+        return len(date_range)
+
+    def get_days(self, day_type=None):
+        """
+        This method provides the specified days in the date range.
+        :param day_type: Type of the days. week and weekend are possible.
+        :return: Number of all specified days in the date range. INT
+        """
+
+        self.c_logger.info("Starting to get the all weekdays.")
+
+        if day_type not in ["week", "weekend"]:
+            raise Exception("Invalid Day type getting".format(day_type))
+
+        days = []
+
+        from_date = self.metrics_date_selector_from_calendar_instance.get()
+        to_date = self.metrics_selector_to_calendar_instance.get()
+
+        date_range = self.data_processor.get_time_range(
+            from_date.replace(" ", ""), to_date.replace(" ", "")
+        )
+
+        for single_date in date_range:
+            if not self.is_weekend(single_date) and day_type == "week":
+                days.append(single_date)
+            if self.is_weekend(single_date) and day_type == "weekend":
+                days.append(single_date)
+
+        return len(days)
+
+    def get_worked_or_missing_days(self, day_type=None):
+        """
+        This method provides the worked or missing days in the date range.
+        :param day_type: Type of the days. week and weekend are possible.
+        :return: Number of all specified days in the date range. INT
+        """
+
+        self.c_logger.info("Staring to get worked or missing days")
+
+        if day_type not in ["worked", "missing"]:
+            raise Exception("Invalid Day type getting : {}".format(day_type))
+
+        days = []
+
+        from_date = self.metrics_date_selector_from_calendar_instance.get()
+        to_date = self.metrics_selector_to_calendar_instance.get()
+
+        date_range = self.data_processor.get_time_range(
+            from_date.replace(" ", ""), to_date.replace(" ", "")
+        )
+
+        for single_date in date_range:
+            (
+                arriving,
+                leaving,
+                _,
+            ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(single_date)
+            if arriving != "00:00" and leaving != "00:00":
+                days.append(single_date)
+
+        if day_type == "worked":
+            return len(days)
+        return self.get_all_days() - self.get_days(day_type="weekend") - len(days)
+
+    def get_required_working_hours(self):
+        """
+        This method provides the required working hours in the date range.
+        # TODO: The hard-coded 8 hours working time should be configured in user config!
+        :return: Number of required working hours.
+        """
+
+        self.c_logger.info("Starting to get the required working hours.")
+
+        return "{:02d}:{:02d}".format(self.get_days(day_type="week") * 8, 0)
+
+    def is_weekend(self, date):
+        """
+        This method provides the weekdays.
+        :param date: The related date.
+        :return: Bool. True if the day is weekend day.
+        """
+
+        self.c_logger.debug("Staring to check if the date is weekend.")
+
+        dt = datetime.datetime.strptime(date, "%Y.%m.%d.")
+
+        self.c_logger.debug(
+            "String date: {} ; DateTime: {} ; Day value: {}".format(date, dt, dt.weekday())
+        )
+
+        if dt.weekday() in (5, 6):
+            self.c_logger.debug("{} - Weekend".format(date))
+            return True
+        else:
+            self.c_logger.debug("{} - Weekday".format(date))
+            return False
+
+    def get_user_times(self, time_type=None):
+        """
+        This method provides the specified user related time data.
+        :param time_type: Type of the required user time.
+        :return: Specified time.
+        """
+
+        self.c_logger.info("Staring to get user times")
+
+        if time_type not in ["worked", "break"]:
+            raise Exception("Invalid Time type getting : {}".format(time_type))
+
+        from_date = self.metrics_date_selector_from_calendar_instance.get()
+        to_date = self.metrics_selector_to_calendar_instance.get()
+
+        date_range = self.data_processor.get_time_range(
+            from_date.replace(" ", ""), to_date.replace(" ", "")
+        )
+
+        all_worked_seconds = 0
+        all_breaking_seconds = 0
+
+        for single_date in date_range:
+            (
+                arriving,
+                leaving,
+                break_time,
+            ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(single_date)
+
+            worked_time_delta = datetime.datetime.strptime(
+                leaving, FMT
+            ) - datetime.datetime.strptime(arriving, FMT)
+            all_worked_seconds += worked_time_delta.total_seconds()
+
+            worked_time_delta = datetime.datetime.strptime(
+                break_time, FMT
+            ) - datetime.datetime.strptime("00:00", FMT)
+            all_breaking_seconds += worked_time_delta.total_seconds()
+
+        if time_type == "worked":
+            ellapsed_hours = int(divmod(all_worked_seconds, 3600)[0])
+            ellapsed_mins = int(divmod(all_worked_seconds, 60)[0]) - (ellapsed_hours * 60)
+
+            return "{:02d}:{:02d}".format(int(ellapsed_hours), int(ellapsed_mins))
+
+        ellapsed_hours = int(divmod(all_breaking_seconds, 3600)[0])
+        ellapsed_mins = int(divmod(all_breaking_seconds, 60)[0]) - (ellapsed_hours * 60)
+
+        return "{:02d}:{:02d}".format(int(ellapsed_hours), int(ellapsed_mins))
 
     def __set_calendar(self, set_date=None):
         """

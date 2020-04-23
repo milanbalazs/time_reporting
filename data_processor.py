@@ -170,7 +170,9 @@ class DataProcessor(object):
                     )
                     return single_dict["from"], single_dict["to"], single_dict["break"]
         self.c_logger.warning(
-            "There is not time date for the '{}' date. Return '00:00', '00:00''".format(date)
+            "There is not time date for the '{}' date. Return '00:00', '00:00', '00:00'".format(
+                date
+            )
         )
         return "00:00", "00:00", "00:00"
 
