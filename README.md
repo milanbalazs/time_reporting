@@ -9,6 +9,10 @@
 
 ![Main window example](imgs/main_window_example.png)
 
+## Graph settings:
+
+![Graph settings window example](imgs/graph_config_example.png)
+
 ## Report tab:
 
 ![Report window example](imgs/report_window_example.png)
@@ -17,14 +21,14 @@
 
 ![User window example](imgs/user_window_example.png)
 
-## Graph settings:
+## Metrics tab:
 
-![Report window example](imgs/graph_config_example.png)
+![Metrics window example](imgs/metrics_tab_example.png)
 
 ## Usage:
 
 ````
->>> python3 time_reporting.py
+>>> python3 time_reporting.py [--test]
 ````
 
 ## NOTE:
