@@ -99,7 +99,7 @@ class MetricsTab(MetricsGetters):
 
         self.__create_horizontal_separator_lines()
 
-        self.__set_resizable(16, 1)
+        self.__set_resizable(18, 1)
 
     @staticmethod
     def __set_up_default_logger():
@@ -268,21 +268,105 @@ class MetricsTab(MetricsGetters):
         breaking_hours_label.grid(row=15, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_minus_hours_label = ttk.Label(
-            self.main_window, text="Overtime minus: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Overtime minus: {}".format(self.get_overtime("minus")),
+            font=LABEL_FONT,
         )
         overtime_minus_hours_label.grid(row=16, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_plus_hours_label = ttk.Label(
-            self.main_window, text="Overtime plus: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Overtime plus: {}".format(self.get_overtime("plus")),
+            font=LABEL_FONT,
         )
         overtime_plus_hours_label.grid(row=17, column=0, sticky="n", columnspan=2, padx=5, pady=5)
 
         overtime_overall_hours_label = ttk.Label(
-            self.main_window, text="Overtime overall: {}".format("666"), font=LABEL_FONT
+            self.main_window,
+            text="Overtime overall: {}".format(self.get_overtime("overall")),
+            font=LABEL_FONT,
         )
         overtime_overall_hours_label.grid(
             row=18, column=0, sticky="n", columnspan=2, padx=5, pady=5
         )
+
+    def get_overtime(self, over_time_type=None):
+        """
+        This method provides overtime attributes.
+        :return: Specified overtime attribute
+        """
+
+        self.c_logger.info("Starting to get the '{}' overtime.".format(over_time_type))
+
+        if over_time_type not in ["plus", "minus", "overall"]:
+            raise Exception("Invalid Overtime type getting : {}".format(over_time_type))
+
+        from_date = self.metrics_date_selector_from_calendar_instance.get()
+        to_date = self.metrics_selector_to_calendar_instance.get()
+
+        date_range = self.data_processor.get_time_range(
+            from_date.replace(" ", ""), to_date.replace(" ", "")
+        )
+
+        minus_overtime_second = 0
+        plus_overtime_second = 0
+
+        for single_date in date_range:
+            (
+                arriving,
+                leaving,
+                break_time,
+            ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(single_date)
+
+            if arriving == "00:00" and leaving == "00:00":
+                continue
+
+            working_time_delta = datetime.datetime.strptime(
+                leaving, FMT
+            ) - datetime.datetime.strptime(arriving, FMT)
+
+            working_ellapsed_hours = int(divmod(working_time_delta.total_seconds(), 3600)[0])
+            working_ellapsed_mins = int(divmod(working_time_delta.total_seconds(), 60)[0]) - (
+                working_ellapsed_hours * 60
+            )
+
+            working_ellapsed_time = "{:02d}:{:02d}".format(
+                int(working_ellapsed_hours), int(working_ellapsed_mins)
+            )
+
+            breaking_time_delta = datetime.datetime.strptime(
+                break_time, FMT
+            ) - datetime.datetime.strptime("00:00", FMT)
+
+            required_hours = int(divmod(3600 * 8 + breaking_time_delta.total_seconds(), 3600)[0])
+            required_mins = int(divmod(3600 * 8 + breaking_time_delta.total_seconds(), 60)[0]) - (
+                required_hours * 60
+            )
+            required_working_time = "{:02d}:{:02d}".format(int(required_hours), int(required_mins))
+
+            overtime_time_delta = datetime.datetime.strptime(
+                working_ellapsed_time, FMT
+            ) - datetime.datetime.strptime(required_working_time, FMT)
+
+            if overtime_time_delta.total_seconds() >= 0:
+                plus_overtime_second += overtime_time_delta.total_seconds()
+                continue
+            minus_overtime_second += overtime_time_delta.total_seconds()
+
+        if over_time_type == "plus":
+            overtime_hours = int(divmod(plus_overtime_second, 3600)[0])
+            overtime_mins = int(divmod(plus_overtime_second, 60)[0]) - (overtime_hours * 60)
+            return "{:02d}:{:02d}".format(int(overtime_hours), int(overtime_mins))
+        elif over_time_type == "minus":
+            overtime_hours = int(divmod(minus_overtime_second, 3600)[0])
+            overtime_mins = int(divmod(minus_overtime_second, 60)[0]) - (overtime_hours * 60)
+            return "{:02d}:{:02d}".format(abs(int(overtime_hours)), abs(int(overtime_mins)))
+
+        overtime_hours = int(divmod(plus_overtime_second + minus_overtime_second, 3600)[0])
+        overtime_mins = int(divmod(plus_overtime_second + minus_overtime_second, 60)[0]) - (
+            overtime_hours * 60
+        )
+        return "{:02d}:{:02d}".format(int(overtime_hours), int(overtime_mins))
 
     def get_missing_working_hours(self):
         """
@@ -303,6 +387,9 @@ class MetricsTab(MetricsGetters):
         )
 
         missing_hours_in_second = required_hours_second - worked_hours_second
+
+        if missing_hours_in_second < 0:
+            return "{:02d}:{:02d}".format(0, 0)
 
         ellapsed_hours = int(divmod(missing_hours_in_second, 3600)[0])
         ellapsed_mins = int(divmod(missing_hours_in_second, 60)[0]) - (ellapsed_hours * 60)
