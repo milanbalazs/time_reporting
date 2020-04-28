@@ -533,15 +533,18 @@ class MetricsTab(MetricsGetters):
                 break_time,
             ) = self.data_processor.get_arriving_leaving_break_times_based_on_date(single_date)
 
+            if arriving == "00:00" and leaving == "00:00":
+                continue
+
             worked_time_delta = datetime.datetime.strptime(
                 leaving, FMT
             ) - datetime.datetime.strptime(arriving, FMT)
             all_worked_seconds += worked_time_delta.total_seconds()
 
-            worked_time_delta = datetime.datetime.strptime(
+            break_time_delta = datetime.datetime.strptime(
                 break_time, FMT
             ) - datetime.datetime.strptime("00:00", FMT)
-            all_breaking_seconds += worked_time_delta.total_seconds()
+            all_breaking_seconds += break_time_delta.total_seconds()
 
         if time_type == "worked":
             ellapsed_hours = int(divmod(all_worked_seconds, 3600)[0])
