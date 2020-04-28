@@ -87,6 +87,7 @@ class MetricsTab(MetricsGetters):
         self.c_logger.info("DataProcessor instance successfully created.")
 
         self.__generate_complete_gui()
+        self.date_range = None
 
     def __generate_complete_gui(self):
         """
@@ -100,6 +101,24 @@ class MetricsTab(MetricsGetters):
         self.__create_horizontal_separator_lines()
 
         self.__set_resizable(18, 1)
+
+    def get_date_range(self):
+        """
+        Providing the selected date range.
+        :return: data range in list.
+        """
+
+        self.c_logger.debug("Starting to get the selected date range.")
+
+        if not self.date_range:
+            from_date = self.metrics_date_selector_from_calendar_instance.get()
+            to_date = self.metrics_selector_to_calendar_instance.get()
+
+            self.date_range = self.data_processor.get_time_range(
+                from_date.replace(" ", ""), to_date.replace(" ", "")
+            )
+
+        return self.date_range
 
     @staticmethod
     def __set_up_default_logger():
@@ -202,6 +221,8 @@ class MetricsTab(MetricsGetters):
             "Starting to generate the calculated metrics GUI section of Metrics tab."
         )
 
+        self.date_range = None
+
         week_days_label = ttk.Label(
             self.main_window, text="All days: {}".format(self.get_all_days()), font=LABEL_FONT
         )
@@ -301,12 +322,7 @@ class MetricsTab(MetricsGetters):
         if over_time_type not in ["plus", "minus", "overall"]:
             raise Exception("Invalid Overtime type getting : {}".format(over_time_type))
 
-        from_date = self.metrics_date_selector_from_calendar_instance.get()
-        to_date = self.metrics_selector_to_calendar_instance.get()
-
-        date_range = self.data_processor.get_time_range(
-            from_date.replace(" ", ""), to_date.replace(" ", "")
-        )
+        date_range = self.get_date_range()
 
         minus_overtime_second = 0
         plus_overtime_second = 0
@@ -403,12 +419,7 @@ class MetricsTab(MetricsGetters):
 
         self.c_logger.info("Starting to get the all days in date range.")
 
-        from_date = self.metrics_date_selector_from_calendar_instance.get()
-        to_date = self.metrics_selector_to_calendar_instance.get()
-
-        date_range = self.data_processor.get_time_range(
-            from_date.replace(" ", ""), to_date.replace(" ", "")
-        )
+        date_range = self.get_date_range()
 
         return len(date_range)
 
@@ -426,12 +437,7 @@ class MetricsTab(MetricsGetters):
 
         days = []
 
-        from_date = self.metrics_date_selector_from_calendar_instance.get()
-        to_date = self.metrics_selector_to_calendar_instance.get()
-
-        date_range = self.data_processor.get_time_range(
-            from_date.replace(" ", ""), to_date.replace(" ", "")
-        )
+        date_range = self.get_date_range()
 
         for single_date in date_range:
             if not self.is_weekend(single_date) and day_type == "week":
@@ -455,12 +461,7 @@ class MetricsTab(MetricsGetters):
 
         days = []
 
-        from_date = self.metrics_date_selector_from_calendar_instance.get()
-        to_date = self.metrics_selector_to_calendar_instance.get()
-
-        date_range = self.data_processor.get_time_range(
-            from_date.replace(" ", ""), to_date.replace(" ", "")
-        )
+        date_range = self.get_date_range()
 
         for single_date in date_range:
             (
@@ -520,12 +521,7 @@ class MetricsTab(MetricsGetters):
         if time_type not in ["worked", "break"]:
             raise Exception("Invalid Time type getting : {}".format(time_type))
 
-        from_date = self.metrics_date_selector_from_calendar_instance.get()
-        to_date = self.metrics_selector_to_calendar_instance.get()
-
-        date_range = self.data_processor.get_time_range(
-            from_date.replace(" ", ""), to_date.replace(" ", "")
-        )
+        date_range = self.get_date_range()
 
         all_worked_seconds = 0
         all_breaking_seconds = 0
