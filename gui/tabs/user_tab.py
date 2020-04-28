@@ -10,6 +10,7 @@ It should mainly contain:
 import os
 import sys
 from tkinter import ttk
+from PIL import ImageTk, Image
 
 try:
     import tkinter as tk
@@ -47,7 +48,7 @@ class UserConfigTab(object):
         :param main_window: Instance of the main Tk window.
         :param c_logger: Logger instance (ColoredLogger type is recommended).
                          Default is MAIN_LOGGER (Global variable.)
-        :param user_info_parser: Instance of ConfigParser module (Parserd user info config file).
+        :param user_info_parser: Instance of ConfigParser module (Parsed user info config file).
         :param user_info_config_file_path: Path of the used configuration file of user info.
         """
 
@@ -66,7 +67,9 @@ class UserConfigTab(object):
         """
 
         self.__create_basic_user_info_gui_section()
+        self.__create_image_uploader_gui_section()
         self.__create_horizontal_separator_lines()
+        self.__create_vertical_separator_lines()
         self.__set_resizable(9, 1)
 
     @staticmethod
@@ -116,6 +119,39 @@ class UserConfigTab(object):
         ttk.Separator(self.main_window, orient=tk.HORIZONTAL).grid(
             row=8, column=0, columnspan=2, sticky="we"
         )
+
+    def __create_vertical_separator_lines(self):
+        """
+        This method creates the vertical separator lines.
+        :return: None
+        """
+
+        ttk.Separator(self.main_window, orient=tk.VERTICAL).grid(
+            row=0, column=2, rowspan=10, sticky="ns"
+        )
+
+    def __create_image_uploader_gui_section(self):
+        """
+        Creation image uploader GUI section.
+        # TODO: Make it configurable and dynamical.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to generate the image uploading section of report tab.")
+
+        user_config_basic_label = ttk.Label(
+            self.main_window, text="Image", font=("Helvetica", 16, "bold")
+        )
+        user_config_basic_label.grid(row=0, column=3, columnspan=2, sticky="s")
+
+        path_of_img = os.path.join(PATH_OF_FILE_DIR, "..", "..", "imgs", "test_user_pic.jpg")
+        self.c_logger.debug("Used user picture: {}".format(path_of_img))
+        image = Image.open(path_of_img)
+        image = image.resize((250, 250), Image.ANTIALIAS)  # The (250, 250) is (height, width)
+        img = ImageTk.PhotoImage(image)
+        panel = tk.Label(self.main_window, image=img)
+        panel.image = img
+        panel.grid(row=2, column=3, rowspan=7, sticky="n")
 
     def __create_basic_user_info_gui_section(self):
         """
