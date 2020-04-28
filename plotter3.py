@@ -284,6 +284,24 @@ class Plotter3(object):
 
             self.c_logger.debug("Single dict from plot data: {}".format(single_dict))
 
+            if single_dict["from"] == "00:00" and single_dict["to"] == "00:00":
+                self.c_logger.debug("No real data for {} date".format(single_dict["date"]))
+                return_times.append(
+                    {
+                        "from": 0,
+                        "to": 0,
+                        "minus": 480,
+                        "plus": None,
+                        "break": 0,
+                        "weekend": self.is_weekend(single_dict["date"]),
+                        "plus_minus_human_readable": "00:00",
+                        "working_hours_human_readable": "00:00",
+                        "from_hours_human_readable": "00:00",
+                        "to_hours_human_readable": "00:00",
+                    }
+                )
+                continue
+
             time_delta = datetime.datetime.strptime(
                 single_dict["to"], FMT
             ) - datetime.datetime.strptime(single_dict["from"], FMT)
@@ -326,7 +344,7 @@ class Plotter3(object):
             if effective_hours_delta.days < 0:
                 self.c_logger.debug("You have minus time")
                 effective_hours_delta = datetime.datetime.strptime(
-                    "08:00", FMT
+                    required_working_time, FMT
                 ) - datetime.datetime.strptime(time_in_office, FMT)
 
                 ellapsed_hours = int(divmod(effective_hours_delta.total_seconds(), 3600)[0])
