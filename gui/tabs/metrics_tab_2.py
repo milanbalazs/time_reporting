@@ -59,8 +59,7 @@ class SimpleTable(tk.Frame):
         for row in range(rows):
             current_row = []
             for column in range(columns):
-                label = tk.Label(self, text="EMPTY",
-                                 borderwidth=0, width=30, font=LABEL_FONT)
+                label = tk.Label(self, text="EMPTY", borderwidth=0, width=30, font=LABEL_FONT)
                 label.grid(row=row, column=column, sticky="nsew", padx=1, pady=1)
                 current_row.append(label)
             self._widgets.append(current_row)
@@ -249,18 +248,22 @@ class MetricsTab(MetricsGetters):
 
         self.date_range = None
 
-        table_fields = {"All days": "{}".format(self.get_all_days()),
-                        "Week days": "{}".format(self.get_days(day_type="week")),
-                        "Weekend days": "{}".format(self.get_days(day_type="weekend")),
-                        "Worked days": "{}".format(self.get_worked_or_missing_days(day_type="worked")),
-                        "Missing working days": "{}".format(self.get_worked_or_missing_days(day_type="missing")),
-                        "Required working hours": "{}".format(self.get_required_working_hours()),
-                        "Worked hours": "{}".format(self.get_user_times("worked")),
-                        "Missing hours": "{}".format(self.get_missing_working_hours()),
-                        "Break hours": "{}".format(self.get_user_times("break")),
-                        "Overtime minus": "{}".format(self.get_overtime("minus")),
-                        "Overtime plus": "{}".format(self.get_overtime("plus")),
-                        "Overtime overall": "{}".format(self.get_overtime("overall"))}
+        table_fields = {
+            "All days": "{}".format(self.get_all_days()),
+            "Week days": "{}".format(self.get_days(day_type="week")),
+            "Weekend days": "{}".format(self.get_days(day_type="weekend")),
+            "Worked days": "{}".format(self.get_worked_or_missing_days(day_type="worked")),
+            "Missing working days": "{}".format(
+                self.get_worked_or_missing_days(day_type="missing")
+            ),
+            "Required working hours": "{}".format(self.get_required_working_hours()),
+            "Worked hours": "{}".format(self.get_user_times("worked")),
+            "Missing hours": "{}".format(self.get_missing_working_hours()),
+            "Break hours": "{}".format(self.get_user_times("break")),
+            "Overtime minus": "{}".format(self.get_overtime("minus")),
+            "Overtime plus": "{}".format(self.get_overtime("plus")),
+            "Overtime overall": "{}".format(self.get_overtime("overall")),
+        }
 
         for idx, (key, value) in enumerate(table_fields.items()):
             self.simple_table.set(idx, 0, key)
