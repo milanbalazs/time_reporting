@@ -30,6 +30,9 @@ sys.path.append(os.path.join(PATH_OF_FILE_DIR, "..", ".."))  # noqa: E402
 from data_processor import DataProcessor
 from color_logger import ColoredLogger
 
+UNUSED_USER_PICS = []
+CURRENT_USED_USER_PIC = None
+
 
 class UserConfigTab(object):
     """
@@ -53,13 +56,14 @@ class UserConfigTab(object):
         :param user_info_config_file_path: Path of the used configuration file of user info.
         """
 
+        global CURRENT_USED_USER_PIC
+
         self.c_logger = c_logger if c_logger else self.__set_up_default_logger()
         self.main_window = main_window
         self.c_logger.info("Get main window: {}".format(main_window))
         self.user_info_parser = user_info_parser
         self.user_info_config_file_path = user_info_config_file_path
-        self.prev_user_pics = []
-
+        CURRENT_USED_USER_PIC = self.user_info_parser.get("BASIC_USER_INFO", "user_image")
         self.__generate_complete_gui()
 
     def __generate_complete_gui(self):
@@ -177,19 +181,20 @@ class UserConfigTab(object):
 
         self.c_logger.info("Starting to set a new user profile picture.")
 
-        self.prev_user_pics.append(
-            os.path.join(
-                PATH_OF_FILE_DIR,
-                "..",
-                "..",
-                "imgs",
-                self.user_info_parser.get("BASIC_USER_INFO", "user_image"),
-            )
+        previous_user_pic = os.path.join(
+            PATH_OF_FILE_DIR,
+            "..",
+            "..",
+            "imgs",
+            self.user_info_parser.get("BASIC_USER_INFO", "user_image"),
         )
+
+        if previous_user_pic not in UNUSED_USER_PICS:
+            UNUSED_USER_PICS.append(previous_user_pic)
 
         filename = tk.filedialog.askopenfilename()
 
-        if filename.split(".")[-1] not in ["png", "jpg", "jpeg"]:
+        if filename.split(".")[-1].lower() not in ["png", "jpg", "jpeg"]:
             # TODO: An error message windows should be raised in case of wrong picture format.
             self.c_logger.warning(
                 "Selected file: {}\n"
@@ -212,6 +217,17 @@ class UserConfigTab(object):
             return
 
         self.user_info_parser.set("BASIC_USER_INFO", "user_image", filename.split(os.sep)[-1])
+
+        current_user_pic = os.path.join(
+            PATH_OF_FILE_DIR,
+            "..",
+            "..",
+            "imgs",
+            self.user_info_parser.get("BASIC_USER_INFO", "user_image"),
+        )
+
+        if current_user_pic not in UNUSED_USER_PICS:
+            UNUSED_USER_PICS.append(current_user_pic)
 
         self.__create_image_uploader_gui_section()
 
@@ -287,13 +303,40 @@ class UserConfigTab(object):
         )
         user_info_save_button.grid(row=9, column=0, columnspan=2, sticky="n", padx=5, pady=5)
 
+    def _purge_not_used_user_pics(self):
+        """
+        Removing the old not used user pictures.
+        :return: None
+        """
+
+        if UNUSED_USER_PICS:
+            for path_of_old_user_pic in UNUSED_USER_PICS:
+                print(
+                    path_of_old_user_pic, self.user_info_parser.get("BASIC_USER_INFO", "user_image")
+                )
+                if (
+                    "default_user_pic.jpg" in path_of_old_user_pic
+                    or self.user_info_parser.get("BASIC_USER_INFO", "user_image")
+                    in path_of_old_user_pic
+                ):
+                    continue
+                self.c_logger.debug(
+                    "Removing old not used user picture: {}".format(path_of_old_user_pic)
+                )
+                os.remove(path_of_old_user_pic)
+                UNUSED_USER_PICS.remove(path_of_old_user_pic)
+
     def __user_info_save_callback(self):
         """
         This method is the callback of the save button.
         :return: None
         """
 
+        global CURRENT_USED_USER_PIC
+
         self.c_logger.info("Starting to call the save button callback.")
+
+        CURRENT_USED_USER_PIC = self.user_info_parser.get("BASIC_USER_INFO", "user_image")
 
         self.user_info_parser.set("BASIC_USER_INFO", "name", self.user_name_entry.get())
         self.user_info_parser.set("BASIC_USER_INFO", "user_id", self.user_id_name_entry.get())
@@ -305,14 +348,7 @@ class UserConfigTab(object):
         with open(self.user_info_config_file_path, "w") as configfile:
             self.user_info_parser.write(configfile)
 
-        if self.prev_user_pics:
-            for path_of_old_user_pic in self.prev_user_pics:
-                if "default_user_pic.jpg" in path_of_old_user_pic:
-                    continue
-                self.c_logger.debug(
-                    "Removing old not used user picture: {}".format(path_of_old_user_pic)
-                )
-                os.remove(path_of_old_user_pic)
+        self._purge_not_used_user_pics()
 
         self.__generate_complete_gui()
 

@@ -98,11 +98,40 @@ def set_up_user_info_config_parser(c_logger, config_file=None):
     return user_info_config
 
 
+def remove_unused_old_user_pics():
+    """
+    removing the old unused user pictures.
+    :return:
+    """
+
+    if user_tab_module.UNUSED_USER_PICS:
+        for path_of_old_user_pic in user_tab_module.UNUSED_USER_PICS:
+            correct_pic_path = os.path.join(
+                PATH_OF_FILE_DIR, "..", "imgs", path_of_old_user_pic.split(os.sep)[-1]
+            )
+            if (
+                "default_user_pic.jpg" in correct_pic_path
+                or user_tab_module.CURRENT_USED_USER_PIC.split(os.sep)[-1] in correct_pic_path
+            ):
+                continue
+            print("Removing old not used user picture: {}".format(correct_pic_path))
+            os.remove(correct_pic_path)
+
+
 def quit_from_app(main_window):
     """
     Quit from application.
     :return: None
     """
+
+    try:
+        remove_unused_old_user_pics()
+    except Exception as pic_removing_error:
+        print(
+            "[ERROR] - Cannot remove the unused user pictures.\nERROR:\n{}".format(
+                pic_removing_error
+            )
+        )
 
     print("Quit from Time Reporting application.")
     main_window.quit()
