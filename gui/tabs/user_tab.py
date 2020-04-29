@@ -191,9 +191,11 @@ class UserConfigTab(object):
 
         if filename.split(".")[-1] not in ["png", "jpg", "jpeg"]:
             # TODO: An error message windows should be raised in case of wrong picture format.
-            self.c_logger.warning("Selected file: {}\n"
-                                  "Invalid picture type. "
-                                  "png, jpg and jpeg are supported type.".format(filename))
+            self.c_logger.warning(
+                "Selected file: {}\n"
+                "Invalid picture type. "
+                "png, jpg and jpeg are supported type.".format(filename)
+            )
             return
 
         self.c_logger.info("Selected user img: {}".format(filename))
