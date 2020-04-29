@@ -11,6 +11,7 @@ import os
 import sys
 from tkinter import ttk
 from PIL import ImageTk, Image
+from shutil import copy as copy_file_to_dir
 
 try:
     import tkinter as tk
@@ -57,6 +58,7 @@ class UserConfigTab(object):
         self.c_logger.info("Get main window: {}".format(main_window))
         self.user_info_parser = user_info_parser
         self.user_info_config_file_path = user_info_config_file_path
+        self.prev_user_pics = []
 
         self.__generate_complete_gui()
 
@@ -133,7 +135,6 @@ class UserConfigTab(object):
     def __create_image_uploader_gui_section(self):
         """
         Creation image uploader GUI section.
-        # TODO: Make it configurable and dynamical.
         :return: None
         """
 
@@ -144,7 +145,13 @@ class UserConfigTab(object):
         )
         user_config_basic_label.grid(row=0, column=3, columnspan=2, sticky="s")
 
-        path_of_img = os.path.join(PATH_OF_FILE_DIR, "..", "..", "imgs", "test_user_pic.jpg")
+        path_of_img = os.path.join(
+            PATH_OF_FILE_DIR,
+            "..",
+            "..",
+            "imgs",
+            self.user_info_parser.get("BASIC_USER_INFO", "user_image"),
+        )
         self.c_logger.debug("Used user picture: {}".format(path_of_img))
         image = Image.open(path_of_img)
         image = image.resize((250, 250), Image.ANTIALIAS)  # The (250, 250) is (height, width)
@@ -152,6 +159,59 @@ class UserConfigTab(object):
         panel = tk.Label(self.main_window, image=img)
         panel.image = img
         panel.grid(row=2, column=3, rowspan=7, sticky="n")
+
+        user_info_save_button = tk.Button(
+            self.main_window,
+            borderwidth=3,
+            text="Browse",
+            font="Helvetica 14 bold",
+            command=lambda: self.__browse_button(),
+        )
+        user_info_save_button.grid(row=5, column=3, rowspan=7, sticky="n", padx=5, pady=5)
+
+    def __browse_button(self):
+        """
+        Set the path of the selected file to Entry.
+        :return: None
+        """
+
+        self.c_logger.info("Starting to set a new user profile picture.")
+
+        self.prev_user_pics.append(
+            os.path.join(
+                PATH_OF_FILE_DIR,
+                "..",
+                "..",
+                "imgs",
+                self.user_info_parser.get("BASIC_USER_INFO", "user_image"),
+            )
+        )
+
+        filename = tk.filedialog.askopenfilename()
+
+        if filename.split(".")[-1] not in ["png", "jpg", "jpeg"]:
+            # TODO: An error message windows should be raised in case of wrong picture format.
+            self.c_logger.warning("Selected file: {}\n"
+                                  "Invalid picture type. "
+                                  "png, jpg and jpeg are supported type.".format(filename))
+            return
+
+        self.c_logger.info("Selected user img: {}".format(filename))
+
+        destination_dir = os.path.join(PATH_OF_FILE_DIR, "..", "..", "imgs")
+        try:
+            copy_file_to_dir(filename, destination_dir)
+        except Exception as file_copy_error:
+            # TODO: An error message windows should be raised in case of copy error.
+            self.c_logger.error("Cannot copy file")
+            self.c_logger.error("Source: {}".format(filename))
+            self.c_logger.error("Destination: {}".format(destination_dir))
+            self.c_logger.error("Error: {}".format(file_copy_error))
+            return
+
+        self.user_info_parser.set("BASIC_USER_INFO", "user_image", filename.split(os.sep)[-1])
+
+        self.__create_image_uploader_gui_section()
 
     def __create_basic_user_info_gui_section(self):
         """
@@ -242,6 +302,15 @@ class UserConfigTab(object):
 
         with open(self.user_info_config_file_path, "w") as configfile:
             self.user_info_parser.write(configfile)
+
+        if self.prev_user_pics:
+            for path_of_old_user_pic in self.prev_user_pics:
+                if "default_user_pic.jpg" in path_of_old_user_pic:
+                    continue
+                self.c_logger.debug(
+                    "Removing old not used user picture: {}".format(path_of_old_user_pic)
+                )
+                os.remove(path_of_old_user_pic)
 
         self.__generate_complete_gui()
 
